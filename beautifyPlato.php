@@ -25,7 +25,10 @@
  *       3. Add persons, place, narrrative at start of dialogue
  *       4. PHP Warning: undefined array
  *       5. PHP Warning: tag section invalid in DomDocument
- *       6. add class names in CSS file for title, author, translator, etc.
+ *       6. add class names in CSS file for title, author, translator instead of H1, H2, H3, etc.
+ *       7.	add commandline args for intput, output directories
+ *       8. add guttenberg id???
+ *       9. get text from guttenberg site instead of file
  *       Note: DomNode->nodeValue = textContent
  */
 
@@ -225,5 +228,5 @@ foreach ($sourceFiles as $filename) {
     if ($pathParts['extension'] != 'html')
         continue;
 
-    beautifyPlato("./sources/" . $pathParts['basename'], "./css/greek-learner-text.css", "output/" . $pathParts['filename'] . "-beautified.html");
+    beautifyPlato("./sources/" . $pathParts['basename'], "./css/plato-jowett-default.css", "output/" . $pathParts['filename'] . "-beautified.html");
 }
