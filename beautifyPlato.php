@@ -1,29 +1,63 @@
 <?php
 
 /**
- * Beautifies Plato's, Meno (tr. Jowett) from Guttenberg Project
+ * beautifyPlato
  *
- * The function takes the location of the html file stripped
- * of everything except the core text i.e. Jowett's introductions, license, etc.
- * The function creates a beautiful html file from the input file and a css file.
+ * Beautifies Plato's Works, translated by Benjamin Jowett, from Guttenberg Project
  *
- * @param  string   $file       location of dialogue text only html file
+ * The function takes the location of the html file and a css file and creates a beautiful html file
+ *
+ * @param  string   $file       location of dialogue html file: must be a Guttenberg Plato book, Jowett translation only
  * @param  string   $cssFile    location of the css file
- * @param  string   $outputFile location and name of outputfile
+ * @param  string   $outputFile location and name of output file
  * @return void
- * @todo Fix: Dialogue Start Marker Incomptible: Apology, Lesser Hypias, Lysis, Republic and Timease (nested divs or atypical Scene, Persons setting)
+ * @todo 1. Fix: Dialogues that contain errors
+ *              Menexius:   introduction prepended; "Person of Dialogue" appears in TOC, which screws things up
+ *              Laches:     introduction prepended; "Person of Dialogue" appears in TOC, which screws things up
+ *              Lysis:      introduction prepended; "Person of Dialogue" appears in TOC, which screws things up
+ *              Cratylus:   first line -- Translated by Benjamin Jowett -- should not be there; rest is good
+ *              Apology:    no text at all
+ *              Crito:      first 8 lines are from the introduction
+ *              Republic:   introduction prepended; books not separated;
+ *              Critias:    missing last line: "* The rest of the Dialogue of Critias has been lost."               [hardcode]
+ *              Laws:       books not separated;
+ *       2. Fix: concate content if more than one in meta tags, for example subject tag
+ *       3. Add persons, place, narrrative at start of dialogue
+ *       4. PHP Warning: undefined array
+ *       5. PHP Warning: tag section invalid in DomDocument
+ *       6. add class names in CSS file for title, author, translator, etc.
  *       Note: DomNode->nodeValue = textContent
  */
 
-function beautifyMeno(string $file, string $cssFile, string $outputFile)
+function beautifyPlato(string $file, string $cssFile, string $outputFile)
 {
-
     $dom = new DomDocument();
     $htmlDoc = file_get_contents($file);
-
     $dom->loadHTML($htmlDoc);
     $xpath = new DOMXPath($dom);
-    //$nodes = $xpath->query('/html/body//*[@style]');
+    $headerNodes = $xpath->query('/html/head/*');
+
+    $title = $author = $translator = '';
+    $metaTagNames = [
+        'dc.title',
+        'dc.language',
+        'dcterms.source',
+        'dcterms.modified',
+        'dc.rights',
+        'dc.creator',
+        'marcrel.trl',
+        'dc.subject',
+        'dcterms.created',
+        'generator'
+    ];
+    $metaData = [];
+    foreach ($headerNodes as $meta) {
+        $name = $meta->getAttribute('name');
+        $content = $meta->getAttribute('content');
+        if (in_array($name, $metaTagNames))
+            $metaData[$name] = $content;
+    }
+
     $nodes = $xpath->query('/html/body//*');
 
     // Variable initialization
@@ -78,10 +112,6 @@ function beautifyMeno(string $file, string $cssFile, string $outputFile)
         'YOUNG SOCRATES'
     ];
 
-    $title = 'Meno';
-    $author = 'Plato';
-    $translator = 'Jowett';
-
     foreach ($nodes as $node) {
 
         // Dialogue end: Guttenberg License Section reached
@@ -117,43 +147,50 @@ function beautifyMeno(string $file, string $cssFile, string $outputFile)
 
         if ($dialogueStart && $node->nodeName == 'p' && trim($node->nodeValue) != '') {
 
-            //printf('Element %s: %s %s', $node->nodeName, $node->textContent, PHP_EOL);
             $utterance = explode(":", trim($node->nodeValue));
 
+            // speech w/o semi colons
             if (empty($utterance))
                 $speech = $node->nodeValue;
+            // speech with semi colons with an initial Speech Character
             elseif (in_array($utterance[0], $speakers)) {
                 $speaker = trim($utterance[0]);
-                $speech = $speech . $utterance[1];
-                // itterate over rest of utterance from explode (may contain more than one semicolon)
                 for ($i = 1; $i < sizeof($utterance); $i++)
                     $speech = $speech . $utterance[$i];
-            } else    // p text not a dialogue entry with speaker but does contain semi-colon
-                $speech = $node->nodeValue;
+            }
+            // speech with semi colons but w/o speech character
+            else {
+                for ($i = 0; $i < sizeof($utterance); $i++)
+                    $speech = $speech . $utterance[$i];
+            }
 
             $speechNum = str_pad($speechNo, 3, '0', STR_PAD_LEFT);
             $speakerH2 = ($speaker != "") ? "<h2 class=\"speaker\">$speaker</h2>" : '';
-            echo "\n";
             $speechDiv = "\n<div class=\"speech\">\n<span class=\"ref\">" . $speechNum . "</span>\n"
                 . $speakerH2 .
                 "\n<div class=\"sentence\">$speech</div>\n</div>";
-            echo $speechDiv;
-            // sleep(1);
+
+            // set and reset variables
             $speechNo++;
             $textInHtml .= $speechDiv;
             $speech = '';
             $speaker = '';
-            // speaker stays the same
         }
     }
 
+    // Output Header
+    $title = $metaData['dc.title'];
+    $author = $metaData['dc.creator'];
+    $translator = $metaData['marcrel.trl'];
+    $cssFileParts = pathinfo($cssFile);
     $head = "<head>
                 <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">
                 <title>" . $title . " | " . $author . "</title>
                 <meta charset=\"utf-8\">
-                <link href=\"" . $cssFile . "\" rel=\"stylesheet\">
+                <link href=\"" . $cssFileParts['basename'] . "\" rel=\"stylesheet\">
             </head>";
 
+    // Dialogue Headings: Author, Title, Translator
     $headings = "
             <nav><a href=\"https://en.wikipedia.org/wiki/Plato\">" . $author . "</a></nav>
             <h1 lang=\"en\">" . $title . "</h1>
@@ -162,6 +199,7 @@ function beautifyMeno(string $file, string $cssFile, string $outputFile)
             <p class=\"copyright\"><small>© Public Domain: <a href=\"https://www.gutenberg.org/license\">Project Guttenberg License</a></small></p>
             ";
 
+    // Body of Dialogue
     $beautifiedFile =
         "<html>" . $head . "
                 <body class=\"default\">
@@ -172,10 +210,20 @@ function beautifyMeno(string $file, string $cssFile, string $outputFile)
                 </body>
             </html>";
 
+    // Output Beautified File
     file_put_contents($outputFile, $beautifiedFile);
-    if (!copy("css/" . $cssFile, 'output/' . $cssFile)) {
-        echo "failed to copy $cssFile...\n";
-    }
+
+    // Copy Css from source to output location
+    if (!copy($cssFile, 'output/' . $cssFileParts['basename']))
+        die("Error: failed to copy $cssFile...");
 }
 
-beautifyMeno("./sources/plato-meno-tr-jowett-guttenberg.html", "greek-learner-text.css", "output/plato-meno-beautified-new.html");
+
+$sourceFiles = scandir('sources');
+foreach ($sourceFiles as $filename) {
+    $pathParts = pathinfo($filename);
+    if ($pathParts['extension'] != 'html')
+        continue;
+
+    beautifyPlato("./sources/" . $pathParts['basename'], "./css/greek-learner-text.css", "output/" . $pathParts['filename'] . "-beautified.html");
+}
