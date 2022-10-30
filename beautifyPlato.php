@@ -1,5 +1,28 @@
 <?php
 
+function getMetaTags($headerNodes) : array {
+    $metaData = [];
+    $metaTagNames = [
+        'dc.title',
+        'dc.language',
+        'dcterms.source',
+        'dcterms.modified',
+        'dc.rights',
+        'dc.creator',
+        'marcrel.trl',
+        'dc.subject',
+        'dcterms.created',
+        'generator'
+    ];
+    foreach ($headerNodes as $meta) {
+        $name = $meta->getAttribute('name');
+        $content = $meta->getAttribute('content');
+        if (in_array($name, $metaTagNames))
+            $metaData[$name] = $content;
+    }
+    return $metaData;
+}
+
 /**
  * beautifyPlato
  *
@@ -16,7 +39,6 @@
  *              Laches:     introduction prepended; "Person of Dialogue" appears in TOC, which screws things up
  *              Lysis:      introduction prepended; "Person of Dialogue" appears in TOC, which screws things up
  *              Cratylus:   first line -- Translated by Benjamin Jowett -- should not be there; rest is good
- *              Apology:    no text at all
  *              Crito:      first 8 lines are from the introduction
  *              Republic:   introduction prepended; books not separated;
  *              Critias:    missing last line: "* The rest of the Dialogue of Critias has been lost."               [hardcode]
@@ -41,31 +63,14 @@ function beautifyPlato(string $file, string $cssFile, string $outputFile)
     $headerNodes = $xpath->query('/html/head/*');
 
     $title = $author = $translator = '';
-    $metaTagNames = [
-        'dc.title',
-        'dc.language',
-        'dcterms.source',
-        'dcterms.modified',
-        'dc.rights',
-        'dc.creator',
-        'marcrel.trl',
-        'dc.subject',
-        'dcterms.created',
-        'generator'
-    ];
-    $metaData = [];
-    foreach ($headerNodes as $meta) {
-        $name = $meta->getAttribute('name');
-        $content = $meta->getAttribute('content');
-        if (in_array($name, $metaTagNames))
-            $metaData[$name] = $content;
-    }
+    $metaData = getMetaTags($headerNodes);
 
     $nodes = $xpath->query('/html/body//*');
 
     // Variable initialization
     $dialogueStart = $dialogueEnd = false;
     $persons = $scene = $place = $placeOfNarration = '';
+    $dialogue = $dialogueDescription = [];
     $speaker = $speech = '';
     $speechNo = 1;
     $textInHtml = '';
@@ -117,35 +122,28 @@ function beautifyPlato(string $file, string $cssFile, string $outputFile)
 
     foreach ($nodes as $node) {
 
-        // Dialogue end: Guttenberg License Section reached
+        //echo $node->nodeName." class: ".$node->getAttribute('class')." id: ".$node->getAttribute('id')."\n";
+        // Dialogue end marker: Guttenberg License Section reached
         if ($node->nodeName == 'section' && $dialogueStart) {
             $dialogueEnd = true;
             break;
         }
 
-        // Dialogue starts: First Node (<p>, <h3>, ...) with PERSONS OF DIALOGUE
-        if (str_contains($node->nodeValue, 'PERSONS OF THE DIALOGUE')) {            // OR Setting, OR ....
-            $utterance = explode(":", trim($node->nodeValue));
-            $persons = $utterance[1];
-            $dialogueStart = true;
-            continue;
-        }
-
-        // Set Scene
-        if (str_contains($node->nodeValue, 'SCENE')) {
-            $utterance = explode(":", trim($node->nodeValue));
-            $setting = $utterance[1];
-            $dialogueStart = true;
-            continue;
-        }
-
-        // Set Place of Narration
-        if (str_contains($node->nodeValue, 'PLACE OF THE NARRATION')) {
-            $utterance = explode(":", trim($node->nodeValue));
-            $placeOfNarration = $utterance[1];
+        // Dialogue Start marker
+        // Apology:
+        if ($metaData['dc.title'] == 'Apology' && $node->nodeName == 'a' && $node = $node->getAttribute('id') == 'chap02')
             $dialogueStart = true;
 
-            continue;
+
+        // Rest of Dialogues: Persons of the Dialogue, Place of Narration 
+        $dialogueDescription = [ 'PERSONS OF THE DIALOGUE', 'SCENE', 'PLACE OF THE NARRATION' ];
+        foreach ($dialogueDescription as $description) {
+            if (str_contains($node->nodeValue, $description)) {
+                $utterance = explode(":", trim($node->nodeValue));
+                $dialogue[$description] = $utterance[1];
+                $dialogueStart = true;
+                continue;
+            }
         }
 
         if ($dialogueStart && $node->nodeName == 'p' && trim($node->nodeValue) != '') {
@@ -193,14 +191,21 @@ function beautifyPlato(string $file, string $cssFile, string $outputFile)
                 <link href=\"" . $cssFileParts['basename'] . "\" rel=\"stylesheet\">
             </head>";
 
+    $preamble = '';
+    foreach ($dialogue as $desc) {
+        $preamble .= "<p>".$desc.":".$dialogue[$desc]."</p>";
+    }
+    $preamble = ($persons != "") ? "PERSONS: ".$persons."<br>" : "";
+    $preamble .= ($scene != "") ? "<p>SCENE: ".$scene."<br>" : '';
+    $preamble .= ($placeOfNarration != "") ? "<p>PLACE OF THE NARRATION: ".$placeOfNarration."<br>" : '';
+
     // Dialogue Headings: Author, Title, Translator
     $headings = "
             <nav><a href=\"https://en.wikipedia.org/wiki/Plato\">" . $author . "</a></nav>
             <h1 lang=\"en\">" . $title . "</h1>
             <h3 lang=\"en\">Translation by " . $translator . "</h3>
-            <!-- <h4 lang=\"en\">Public Domain: <a href=\"https://www.gutenberg.org/license\">Project Guttenberg License</a></h4> -->
-            <p class=\"copyright\"><small>© Public Domain: <a href=\"https://www.gutenberg.org/license\">Project Guttenberg License</a></small></p>
-            ";
+            <p class=\"copyright\"><small>© Public Domain: <a href=\"https://www.gutenberg.org/license\">Project Guttenberg License</a></small></p>"
+            .$preamble;
 
     // Body of Dialogue
     $beautifiedFile =
@@ -222,11 +227,13 @@ function beautifyPlato(string $file, string $cssFile, string $outputFile)
 }
 
 
-$sourceFiles = scandir('sources');
-foreach ($sourceFiles as $filename) {
-    $pathParts = pathinfo($filename);
-    if ($pathParts['extension'] != 'html')
-        continue;
+beautifyPlato("./sources/plato-apology-tr-jowett-guttenberg.html", "./css/plato-jowett-default.css", "output/plato-apology-tr-jowett-guttenberg-beautified.html");
 
-    beautifyPlato("./sources/" . $pathParts['basename'], "./css/plato-jowett-default.css", "output/" . $pathParts['filename'] . "-beautified.html");
-}
+// $sourceFiles = scandir('sources');
+// foreach ($sourceFiles as $filename) {
+//     $pathParts = pathinfo($filename);
+//     if ($pathParts['extension'] != 'html')
+//         continue;
+
+//     beautifyPlato("./sources/" . $pathParts['basename'], "./css/plato-jowett-default.css", "output/" . $pathParts['filename'] . "-beautified.html");
+// }
