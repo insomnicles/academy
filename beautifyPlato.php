@@ -32,7 +32,8 @@ function getMetaTags($headerNodes): array
     return $metaData;
 }
 
-function jowettTranslationPlato($metaTags) : bool {
+function jowettTranslationPlato($metaTags): bool
+{
     if (!isset($metaTags['dcterms.source']))
         return false;
 
@@ -54,20 +55,20 @@ function jowettTranslationPlato($metaTags) : bool {
         "lysis"     => "https://www.gutenberg.org/files/1579/1579-h/1579-h.htm",
         "menexenus" => "https://www.gutenberg.org/files/1682/1682-h/1682-h.htm",
         "meno"      => "https://www.gutenberg.org/files/1643/1643-h/1643-h.htm",
-        "phaedo"    =>"https://www.gutenberg.org/files/1658/1658-h/1658-h.htm",
+        "phaedo"    => "https://www.gutenberg.org/files/1658/1658-h/1658-h.htm",
         "phaedrus"  => "https://www.gutenberg.org/files/1636/1636-h/1636-h.htm",
         "philebus"  => "https://www.gutenberg.org/files/1744/1744-h/1744-h.htm",
-        "protagoras"=> "https://www.gutenberg.org/files/1591/1591-h/1591-h.htm",
+        "protagoras" => "https://www.gutenberg.org/files/1591/1591-h/1591-h.htm",
         "republic"  => "https://www.gutenberg.org/files/1497/1497-h/1497-h.htm",
         "sophist"   => "https://www.gutenberg.org/files/1735/1735-h/1735-h.htm",
         "statesman" => "https://www.gutenberg.org/files/1738/1738-h/1738-h.htm",
         "symposium" => "https://www.gutenberg.org/files/1600/1600-h/1600-h.htm",
-        "theaetetus"=> "https://www.gutenberg.org/files/1726/1726-h/1726-h.htm",
+        "theaetetus" => "https://www.gutenberg.org/files/1726/1726-h/1726-h.htm",
         "timaeus"   => "https://www.gutenberg.org/files/1572/1572-h/1572-h.htm"
     ];
     foreach ($guttenbergJowettTranslations as $key => $sourceUrl)
         if ($source == $sourceUrl) {
-            echo "Processing ".$key."\n";
+            echo "Processing " . $key . "\n";
             return true;
         }
     return false;
@@ -75,11 +76,21 @@ function jowettTranslationPlato($metaTags) : bool {
 
 function dialogueStarted($node, $metaData, $dialogueDescriptors): bool
 {
-    // atypical dialogues
-    if ($metaData['dc.title'] == 'Apology' && $node->nodeName == 'a' && $node->getAttribute('id') == 'chap02')
-        return true;
+    // Atypical dialogue structure
+    if ($metaData['dc.title'] == 'Apology')
+        return $node->nodeName == 'a' && $node->getAttribute('id') == 'chap02' ? true : false;
+    if ($metaData['dc.title'] == 'Menexenus')
+        return $node->nodeName == 'h2' && str_contains($node->nodeValue, 'PERSONS OF THE DIALOGUE') ? true : false;
+    if ($metaData['dc.title'] == 'Laches')
+        return $node->nodeName == 'h3' && str_contains($node->nodeValue, 'PERSONS OF THE DIALOGUE') ? true : false;
+    if ($metaData['dc.title'] == 'Lysis')
+        return $node->nodeName == 'h2' && str_contains($node->nodeValue, 'PERSONS OF THE DIALOGUE') ? true : false;
+    if ($metaData['dc.title'] == 'Cratylus')
+        return $node->nodeName == 'p' && $node->getAttribute('class') == 'center' && str_contains($node->nodeValue, 'PERSONS OF THE DIALOGUE') ? true : false;
+    if ($metaData['dc.title'] == 'Crito')
+        return $node->nodeName == 'p' && str_contains($node->nodeValue, 'PERSONS OF THE DIALOGUE') ? true : false;
 
-    // typical dialogue: occurence of a dialogue descriptor, usually PERSONS OF DIALOGUE
+    // typical dialogue structure: dialogue descriptor indicates start of dialogue (usually PERSONS OF DIALOGUE)
     else {
         foreach ($dialogueDescriptors as $description)
             if (str_contains($node->nodeValue, $description))
@@ -105,48 +116,48 @@ function paragraphHtml(int $paragraphNum, string $speaker, array $parSentences):
 
     $parDiv = "<div class=\"speech\">
                 <span class=\"ref\">" . $parNumFormatted . "</span>" .
-                $speakerH2.
-                $parHtml.
-              "</div>";
+        $speakerH2 .
+        $parHtml .
+        "</div>";
     return $parDiv;
 }
 
 function dialogueHtml($metaData, $cssFile, $dialogueDescription, $dialogueHTML)
 {
     $title = $metaData['dc.title'];
-    $author = explode(",",$metaData['dc.creator'])[0];
+    $author = explode(",", $metaData['dc.creator'])[0];
     $translator = $metaData['marcrel.trl'];
-
     $cssFileParts = pathinfo($cssFile);
+
     $header = "<head>
                 <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">
-                <title>".$title." | ".$author."</title>
+                <title>" . $title . " | " . $author . "</title>
                 <meta charset=\"utf-8\">
-                <link href=\"".$cssFileParts['basename']."\" rel=\"stylesheet\">
+                <link href=\"" . $cssFileParts['basename'] . "\" rel=\"stylesheet\">
             </head>";
 
     $preamble = '';
     foreach ($dialogueDescription as $key => $desc) {
         if ($desc != '')
-            $preamble.= "<p class=\"dialogueDescription\"><strong>".$key."</strong>:".$desc;
+            $preamble .= "<p class=\"dialogueDescription\"><strong>" . $key . "</strong>:" . $desc;
     }
     // Dialogue Headings: Author, Title, Translator
     $headings = "
-            <h1 class=\"dialogueTitle\" lang=\"en\">".$title."</h1>
-            <h2 class=\"dialogueAuthor\" lang=\"en\"><a href=\"https://en.wikipedia.org/wiki/Plato\">".$author."</a></h2>
-            <h3 class=\"dialogueTranslator\" lang=\"en\">Translation by ".$translator."</h3>
+            <h1 class=\"dialogueTitle\" lang=\"en\">" . $title . "</h1>
+            <h2 class=\"dialogueAuthor\" lang=\"en\"><a href=\"https://en.wikipedia.org/wiki/Plato\">" . $author . "</a></h2>
+            <h3 class=\"dialogueTranslator\" lang=\"en\">Translation by " . $translator . "</h3>
             <p class=\"dialogueCopyright\"><small>© Public Domain: <a href=\"https://www.gutenberg.org/license\">Project Guttenberg License</a></small></p>"
-            .$preamble;
+        . $preamble;
 
     // Body of Dialogue
     $beautifiedFile =
         "<html>" .
-            $header .
+        $header .
         "<body class=\"default\">
                 <div class=\"container\">" .
-                    $headings .
-                    $dialogueHTML .
-                "</div>
+        $headings .
+        $dialogueHTML .
+        "</div>
             </body>
         </html>";
     return $beautifiedFile;
@@ -165,14 +176,11 @@ function dialogueHtml($metaData, $cssFile, $dialogueDescription, $dialogueHTML)
  * @param  string   $outputFile location and name of output file
  * @return void
  * @todo 1. Fix: Dialogues that contain errors
- *              Menexius:   introduction prepended; "Person of Dialogue" appears in TOC, which screws things up
- *              Laches:     introduction prepended; "Person of Dialogue" appears in TOC, which screws things up
- *              Lysis:      introduction prepended; "Person of Dialogue" appears in TOC, which screws things up
- *              Cratylus:   first line -- Translated by Benjamin Jowett -- should not be there; rest is good
- *              Crito:      first 8 lines are from the introduction
  *              Republic:   introduction prepended; books not separated;
- *              Critias:    missing last line: "* The rest of the Dialogue of Critias has been lost."               [hardcode]
  *              Laws:       books not separated;
+ *              Laches:     Dialogue description not recorded propertly
+ *              Lysis:      Dialogue description not recorded propertly
+ *              Phaedo:     person of dialogue missing
  *       2. fix: sentence tokenizer (spreg) does not identify sentences ending with "?!", or "..."
  *       3.	add commandline args for intput, output directories
  *       4. add option to get text from guttenberg site instead of file
@@ -184,9 +192,9 @@ function beautifyPlato(string $file, string $cssFile, string $outputFile)
 {
     // Basic Guards
     if (!file_exists($file))
-        die("Html file ".$file." could not be found");
+        die("Html file " . $file . " could not be found");
     if (!file_exists($cssFile))
-        die("Css file ".$cssFile." could not be found");
+        die("Css file " . $cssFile . " could not be found");
     $outputFileParts = pathinfo($outputFile);
     if (!is_dir($outputFileParts['dirname']))
         die("Output directory not found");
@@ -291,7 +299,7 @@ function beautifyPlato(string $file, string $cssFile, string $outputFile)
             continue;
 
         // record dialogue description, if there is one
-        $utterance = explode(":",$nodeValue);
+        $utterance = explode(":", $nodeValue);
         if (in_array($utterance[0], $dialogueDescriptors)) {
             // if (!isset($utterance[1]) )
             //     echo $node->nodeValue;
@@ -306,11 +314,10 @@ function beautifyPlato(string $file, string $cssFile, string $outputFile)
             if (in_array($utterance[0], $speakers)) {
                 $speaker = $utterance[0];
                 for ($i = 1; $i < sizeof($utterance); $i++)
-                    $paragraphText = $paragraphText.$utterance[$i];
-            }
-            else
+                    $paragraphText = $paragraphText . $utterance[$i];
+            } else
                 for ($i = 0; $i < sizeof($utterance); $i++)
-                    $paragraphText = $paragraphText.$utterance[$i];
+                    $paragraphText = $paragraphText . $utterance[$i];
 
             // TODO: doesnt work for sentences that end in i) ?!, ii) ...
             $parSentences = preg_split('/(?<=[.?!;:])\s+/', trim(preg_replace('/\s+/', ' ', $paragraphText)), -1, PREG_SPLIT_NO_EMPTY);
@@ -322,6 +329,9 @@ function beautifyPlato(string $file, string $cssFile, string $outputFile)
             $speaker = '';
         }
     }
+
+    if ($metaData['dc.title'] == 'Critias')
+        $textParagraphsHtml .= "<pre>* The rest of the Dialogue of Critias has been lost.</pre>";
 
     $beautifiedHtmlFile = dialogueHtml($metaData, $cssFile, $dialogueDescription, $textParagraphsHtml);
 
