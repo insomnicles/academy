@@ -14,6 +14,14 @@ nav {
   font-size: 120%;
   text-align: center;
 }
+h1 {
+  text-align: center;
+}
+h3 {
+  text-align: center;
+}
+
+
 a {
   color: #C00;
   text-decoration: none;
@@ -22,15 +30,33 @@ a:hover {
   color: #F33;
   text-decoration: underline;
 }
-h1 {
+
+.dialogueTitle {
   text-align: center;
+  margin:0px;
 }
-h3 {
+.dialogueAuthor {
   text-align: center;
+  margin:0px;
 }
-.copyright {
+.dialogueTranslator {
+  font-size: 90%;
   text-align: center;
+  margin-top:5px;
+  margin-bottom:5px;
 }
+.dialogueCopyright {
+  text-align: center;
+  margin-top:5px;
+  margin-bottom:5px;
+  padding-bottom: 25px;
+
+}
+.dialogueDescription {
+  margin-top:5px;
+  margin-bottom:5px;
+}
+
 body.index h1 {
   font-size: 3em;
   margin-bottom: 0;
