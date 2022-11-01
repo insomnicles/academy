@@ -371,6 +371,6 @@ function beautifyPlato(string $cssFile, string $outputDir, string $requestedDial
 if (isset($argv[1]) && isset($argv[2]) && isset($argv[3]))
     beautifyPlato($argv[1], $argv[2], $argv[3]);
 else
-    die("Error: usage: php beautifulPlato.php css_file_location output_dir (optionally)[meno]");
+    die("Usage Error:\nsingle dialogue: php beautifulPlato.php css_file_location output_dir meno\nall dialogues: php beautifulPlato.php css_file_location output_dir all\n\n");
 
 ?>
