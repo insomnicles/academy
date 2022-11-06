@@ -1,149 +1,5 @@
 <?php
 
-function getMetaTags(string $dialogue, $headerNodes): array
-{
-    $metaTags = [];
-    $metaTagNames = [
-        'dc.title',
-        'dc.language',
-        'dcterms.source',
-        'dcterms.modified',
-        'dc.rights',
-        'dc.creator',
-        'marcrel.trl',
-        'dc.subject',
-        'dcterms.created',
-        'generator'
-    ];
-    $subjects = [];
-
-    foreach ($headerNodes as $meta) {
-        $name = $meta->getAttribute('name');
-        $content = $meta->getAttribute('content');
-        if (in_array($name, $metaTagNames))
-            if ($name == 'dc.subject')
-                array_push($subjects, $content);
-            else
-                $metaTags[$name] = $content;
-    }
-    if (!empty($subjects))
-        $metaTags['dc.subject'] = $subjects;
-
-    if ($dialogue == 'alcibiadesI' || $dialogue == 'alcibiadesII')
-        $metaTags['marcrel.trl'] = "Jowett, Benjamin, 1817-1893";
-
-    return $metaTags;
-}
-
-function dialogueStarted($node, $metaTags, $dialogueDescriptors): bool
-{
-    // Atypical dialogue structure
-    if ($metaTags['dc.title'] == 'Apology')
-        return $node->nodeName == 'a' && $node->getAttribute('id') == 'chap02' ? true : false;
-    if ($metaTags['dc.title'] == 'Menexenus')
-        return $node->nodeName == 'h2' && str_contains($node->nodeValue, 'PERSONS OF THE DIALOGUE') ? true : false;
-    if ($metaTags['dc.title'] == 'Laches')
-        return $node->nodeName == 'h3' && str_contains($node->nodeValue, 'PERSONS OF THE DIALOGUE') ? true : false;
-    if ($metaTags['dc.title'] == 'Lysis')
-        return $node->nodeName == 'h2' && str_contains($node->nodeValue, 'PERSONS OF THE DIALOGUE') ? true : false;
-    if ($metaTags['dc.title'] == 'Cratylus')
-        return $node->nodeName == 'p' && $node->getAttribute('class') == 'center' && str_contains($node->nodeValue, 'PERSONS OF THE DIALOGUE') ? true : false;
-    if ($metaTags['dc.title'] == 'Crito')
-        return $node->nodeName == 'p' && str_contains($node->nodeValue, 'PERSONS OF THE DIALOGUE') ? true : false;
-
-    // typical dialogue structure: dialogue descriptor indicates start of dialogue (usually PERSONS OF DIALOGUE)
-    else {
-        foreach ($dialogueDescriptors as $description)
-            if (str_contains($node->nodeValue, $description))
-                return true;
-    }
-    return false;
-}
-
-function guttenbergPostscript($node): bool
-{
-    return $node->nodeName == 'section' && ($node->getAttribute('id') == 'pg-footer');
-}
-
-function guttenbergPreamble($node): bool
-{
-    return $node->nodeName == 'section' && ($node->getAttribute('id') == 'pg-header');
-}
-
-function paragraphHtml(int $paragraphNum, string $speaker, array $parSentences): string
-{
-    $parNumFormatted = str_pad($paragraphNum, 3, '0', STR_PAD_LEFT);
-    $speakerH2 = ($speaker != "") ? "<h2 class=\"speaker\">" . $speaker . "</h2>" : '';
-    $parHtml = '';
-
-    foreach ($parSentences as $sentence)
-        $parHtml .= "<div class=\"sentence\">" . $sentence . "&nbsp;</div>";
-
-    $parDiv = "<div class=\"speech\">
-                <span class=\"ref\">" . $parNumFormatted . "</span>" .
-                $speakerH2 .
-                $parHtml .
-            "</div>";
-
-    return $parDiv;
-}
-
-function dialogueHtml($metaTags, $cssFile, $dialogueUrl, $dialogueDescription, $dialogueHTML)
-{
-    $title = $metaTags['dc.title'];
-    $author = explode(",", $metaTags['dc.creator'])[0];
-    $translator = $metaTags['marcrel.trl'];
-    $cssFileParts = pathinfo($cssFile);
-
-    $metaTagsHtml = '';
-
-    foreach ($metaTags as $name => $content) {
-        if (is_array($content)) {
-            foreach ($content as $unitcontent)
-                $metaTagsHtml .= "<meta name=\"".$name."\" content=\"".$unitcontent."\">\n";
-        }
-        else
-            $metaTagsHtml .= "<meta name=\"".$name."\" content=\"".$content."\">\n";
-    }
-
-    $header = "<head>
-                <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">
-                <title>" . $title . " | " . $author . "</title>
-                <meta charset=\"utf-8\">
-                <meta name=\"sourceUrl\" content=\"".$dialogueUrl."\"".
-                $metaTagsHtml.
-                "<link href=\"" . $cssFileParts['basename'] . "\" rel=\"stylesheet\">
-            </head>";
-
-    $preamble = '';
-    foreach ($dialogueDescription as $key => $desc) {
-        if ($desc != '')
-            $preamble .= "<p class=\"dialogueDescription\"><strong>" . $key . "</strong>:" . $desc;
-    }
-
-    // Dialogue Headings: Author, Title, Translator
-    $headings = "
-            <h1 class=\"dialogueTitle\" lang=\"en\">" . $title . "</h1>
-            <h2 class=\"dialogueAuthor\" lang=\"en\"><a href=\"https://en.wikipedia.org/wiki/Plato\">" . $author . "</a></h2>
-            <h3 class=\"dialogueTranslator\" lang=\"en\">Translation by " . $translator . "</h3>
-            <p class=\"dialogueCopyright\"><small><a href=\"".$dialogueUrl."\">Guttenberg source file</a>&nbsp;and&nbsp;<a href=\"https://www.gutenberg.org/license\">©License</a></small></p>".
-            $preamble;
-
-    // Body of Dialogue
-    $beautifiedHtml =
-        "<html>".
-            $header.
-            "<body class=\"default\">
-                <div class=\"container\">".
-                    $headings .
-                    $dialogueHTML.
-                "</div>
-            </body>
-        </html>";
-
-    return $beautifiedHtml;
-}
-
 /**
  * beautifyPlato
  *
@@ -163,7 +19,9 @@ function dialogueHtml($metaTags, $cssFile, $dialogueUrl, $dialogueDescription, $
  *              Lysis:      Dialogue description not recorded propertly
  *              Phaedo:     person of dialogue missing
  *       2. fix: sentence tokenizer (spreg) does not identify sentences ending with "?!", or "..."
- *       3. Add Non-Jowett dialogues
+ *       3. fix: add footnotes
+ *       4. add Jowett introductions
+ *       5. Add Non-Jowett dialogues
  */
 function beautifyPlato(string $cssFile, string $outputDir, string $requestedDialogue)
 {
@@ -278,6 +136,7 @@ function beautifyPlato(string $cssFile, string $outputDir, string $requestedDial
 
         // initialize variable for dialogue processsing
         $dialogueDescription = [];
+        $toc = [];
         $dialogueStarted = false;
         $speaker = '';
         $paragraphNum = 1;;
@@ -306,6 +165,11 @@ function beautifyPlato(string $cssFile, string $outputDir, string $requestedDial
 
             if (guttenbergPostscript($node))
                 break;
+
+            if ($node->nodeName == 'a' && $node->getAttribute('class') == 'pginternal') {
+                array_push($toc, [ 'content' => $node->nodeValue, 'href' => $node->getAttribute('href')]);
+                echo "TOC: ".$node->nodeValue.":".$node->getAttribute('href')."\n";
+            }
 
             // Check if Dialogue Started
             if (!$dialogueStarted) {
@@ -355,7 +219,7 @@ function beautifyPlato(string $cssFile, string $outputDir, string $requestedDial
         if ($metaTags['dc.title'] == 'Critias')
             $textParagraphsHtml .= "<pre>* The rest of the Dialogue of Critias has been lost.</pre>";
 
-        $beautifiedHtmlFile = dialogueHtml($metaTags, $cssFile,  $dialogueUrl, $dialogueDescription, $textParagraphsHtml);
+        $beautifiedHtmlFile = dialogueHtml($metaTags, $cssFile,  $dialogueUrl, $dialogueDescription, $toc, $textParagraphsHtml);
 
         // Output Beautified File
         file_put_contents("output/" . $title . ".html", $beautifiedHtmlFile);
@@ -368,9 +232,161 @@ function beautifyPlato(string $cssFile, string $outputDir, string $requestedDial
     sleep(3);
 }
 
+function getMetaTags(string $dialogue, $headerNodes): array
+{
+    $metaTags = [];
+    $metaTagNames = [
+        'dc.title',
+        'dc.language',
+        'dcterms.source',
+        'dcterms.modified',
+        'dc.rights',
+        'dc.creator',
+        'marcrel.trl',
+        'dc.subject',
+        'dcterms.created',
+        'generator'
+    ];
+    $subjects = [];
+
+    foreach ($headerNodes as $meta) {
+        $name = $meta->getAttribute('name');
+        $content = $meta->getAttribute('content');
+        if (in_array($name, $metaTagNames))
+            if ($name == 'dc.subject')
+                array_push($subjects, $content);
+            else
+                $metaTags[$name] = $content;
+    }
+    if (!empty($subjects))
+        $metaTags['dc.subject'] = $subjects;
+
+    if ($dialogue == 'alcibiadesI' || $dialogue == 'alcibiadesII')
+        $metaTags['marcrel.trl'] = "Jowett, Benjamin, 1817-1893";
+
+    return $metaTags;
+}
+
+function dialogueStarted($node, $metaTags, $dialogueDescriptors): bool
+{
+    // Atypical dialogue structure
+    if ($metaTags['dc.title'] == 'Apology')
+        return $node->nodeName == 'a' && $node->getAttribute('id') == 'chap02' ? true : false;
+    if ($metaTags['dc.title'] == 'Menexenus')
+        return $node->nodeName == 'h2' && str_contains($node->nodeValue, 'PERSONS OF THE DIALOGUE') ? true : false;
+    if ($metaTags['dc.title'] == 'Laches')
+        return $node->nodeName == 'h3' && str_contains($node->nodeValue, 'PERSONS OF THE DIALOGUE') ? true : false;
+    if ($metaTags['dc.title'] == 'Lysis')
+        return $node->nodeName == 'h2' && str_contains($node->nodeValue, 'PERSONS OF THE DIALOGUE') ? true : false;
+    if ($metaTags['dc.title'] == 'Cratylus')
+        return $node->nodeName == 'p' && $node->getAttribute('class') == 'center' && str_contains($node->nodeValue, 'PERSONS OF THE DIALOGUE') ? true : false;
+    if ($metaTags['dc.title'] == 'Crito')
+        return $node->nodeName == 'p' && str_contains($node->nodeValue, 'PERSONS OF THE DIALOGUE') ? true : false;
+
+    // typical dialogue structure: dialogue descriptor indicates start of dialogue (usually PERSONS OF DIALOGUE)
+    else {
+        foreach ($dialogueDescriptors as $description)
+            if (str_contains($node->nodeValue, $description))
+                return true;
+    }
+    return false;
+}
+
+function guttenbergPostscript($node): bool
+{
+    return $node->nodeName == 'section' && ($node->getAttribute('id') == 'pg-footer');
+}
+
+function guttenbergPreamble($node): bool
+{
+    return $node->nodeName == 'section' && ($node->getAttribute('id') == 'pg-header');
+}
+
+function paragraphHtml(int $paragraphNum, string $speaker, array $parSentences): string
+{
+    $parNumFormatted = str_pad($paragraphNum, 3, '0', STR_PAD_LEFT);
+    $speakerH2 = ($speaker != "") ? "<h2 class=\"speaker\">" . $speaker . "</h2>" : '';
+    $parHtml = '';
+
+    foreach ($parSentences as $sentence)
+        $parHtml .= "<div class=\"sentence\">" . $sentence . "&nbsp;</div>";
+
+    $parDiv = "<div class=\"speech\">
+                <span class=\"ref\">" . $parNumFormatted . "</span>" .
+                $speakerH2 .
+                $parHtml .
+            "</div>";
+
+    return $parDiv;
+}
+
+function dialogueHtml($metaTags, $cssFile, $dialogueUrl, $dialogueDescription, array $toc, $dialogueHTML)
+{
+    $title = $metaTags['dc.title'];
+    $author = explode(",", $metaTags['dc.creator'])[0];
+    $translator = $metaTags['marcrel.trl'];
+    $cssFileParts = pathinfo($cssFile);
+
+    $metaTagsHtml = '';
+
+    foreach ($metaTags as $name => $content) {
+        if (is_array($content)) {
+            foreach ($content as $unitcontent)
+                $metaTagsHtml .= "<meta name=\"".$name."\" content=\"".$unitcontent."\">\n";
+        }
+        else
+            $metaTagsHtml .= "<meta name=\"".$name."\" content=\"".$content."\">\n";
+    }
+
+    $header = "<head>
+                    <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">
+                    <title>" . $title . " | " . $author . "</title>
+                    <meta charset=\"utf-8\">
+                    <meta name=\"sourceUrl\" content=\"".$dialogueUrl."\"".
+                    $metaTagsHtml.
+                    "<link href=\"" . $cssFileParts['basename'] . "\" rel=\"stylesheet\">
+                </head>";
+
+    $tocHtml = '';
+    print_r($toc);
+    foreach ($toc as $tocEntry)
+        $tocHtml.= "<a href=\"".$tocEntry['href']."\">".$tocEntry['content']."</a><br>";
+
+    $preamble = '';
+    foreach ($dialogueDescription as $key => $desc) {
+        if ($desc != '')
+            $preamble .= "<p class=\"dialogueDescription\"><strong>" . $key . "</strong>:" . $desc;
+    }
+
+    // Dialogue Headings: Author, Title, Translator
+    $headings = "
+            <h1 class=\"dialogueTitle\" lang=\"en\">" . $title . "</h1>
+            <h2 class=\"dialogueAuthor\" lang=\"en\"><a href=\"https://en.wikipedia.org/wiki/Plato\">" . $author . "</a></h2>
+            <h3 class=\"dialogueTranslator\" lang=\"en\">Translation by " . $translator . "</h3>
+            <p class=\"dialogueCopyright\"><small><a href=\"".$dialogueUrl."\">Guttenberg source file</a>&nbsp;and&nbsp;<a href=\"https://www.gutenberg.org/license\">©License</a></small></p>".
+            $tocHtml.
+            $preamble;
+
+    $dialogueTocEntry = count($toc) - 1;
+    $dialogueStart = "<a href=\"".$toc[$dialogueTocEntry]['href']."\">".$toc['content']."</a>";
+    // Body of Dialogue
+    $beautifiedHtml =
+        "<html>".
+            $header.
+            "<body class=\"default\">
+                <div class=\"container\">".
+                    $headings.
+                    $dialogueStart.
+                    $dialogueHTML.
+                "</div>
+            </body>
+        </html>";
+
+    return $beautifiedHtml;
+}
+
+
 if (isset($argv[1]) && isset($argv[2]) && isset($argv[3]))
     beautifyPlato($argv[1], $argv[2], $argv[3]);
 else
     die("Usage Error:\nsingle dialogue: php beautifulPlato.php css_file_location output_dir meno\nall dialogues: php beautifulPlato.php css_file_location output_dir all\n\n");
-
-?>
