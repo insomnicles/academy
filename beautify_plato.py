@@ -1,56 +1,233 @@
 import time
 import re
 import nltk
-#nltk.download('punkt')
+import sys
+import shutil
+from bs4 import BeautifulSoup
+import os
+import os.path
 
-try:
-    from BeautifulSoup import BeautifulSoup
-except ImportError:
-    from bs4 import BeautifulSoup
+def get_meta_tags(parsed_html):
 
-def getMetaTags(dialogue, metaHtmlTags):
-    metaInfo = []
+    metaInfo, subjects = [], []
 
-    for tag in metaHtmlTags:
-        if tag.get('name') is not None and tag.get('content') is not None:
-            metaInfo.append({ tag.get('name'): tag.get('content') })
+    for tag in parsed_html.find_all('meta'):
+        name = tag.get('name')
+        content = tag.get('content')
+        if name is not None and content is not None:
+            if name == 'dc.subject':
+                subjects = ''
+            else:
+                metaInfo.append({ tag.get('name'): tag.get('content') })
+    metaInfo.append({'subjects': subjects})
+
     return metaInfo
 
-def getToc(tocHtml):
-    entries = []
-    sections = {}
-    toc = {}
+def get_toc(parsed_html):
+
+    entries, sections, toc = [], {}, {}
+
     for tag in parsed_html.body.find_all():
         if (tag.name == "a"):
             # TOC Entry
             if tag.get('class') is not None and 'pginternal' in tag.get('class'):
                 link=tag.get("href")[1:]
-                toc[link] = tag.text.strip()
-                sections[link] = ''
+                if "fn" not in link:
+                    toc[link] = tag.text.strip()
+                    sections[link] = ''
             # Section Link
             elif tag.get('id') is not None:
-                entries.append(tag['id'])
-    print(toc)
-    print(entries)
-    print(sections)
+                if "fn" not in tag.get('id'):
+                    entries.append(tag['id'])
+
+    if len(entries) != len(toc):
+        print("TOC entries do not match document entries")
+        return None
+
     return toc
 
-files = {
-    "alcibiadesI":"./sources/plato/plato-alcibiadesI-tr-jowett-guttenberg.html",        # no toc, no entries
+# def get_dialogue_descriptions(parsed_html, dialogue_descriptors):
+#     descriptions = {}
+#     for tag in parsed_html.body.find_all():
+#         split = tag.text.split(':')
+#         first = split[0].strip()
+#         if first in dialogue_descriptors:
+#             description = split[1:][0]
+#             description = description.replace("\n", "").replace("\t","")
+#             description = re.sub(" +", " ", description)
+#             descriptions[first] = description.strip()
+#     return descriptions
+
+
+def get_sections(parsed_html):
+
+    current_section, sections = '', {}
+
+    # for section in sections
+    for tag in parsed_html.body.find_all():
+        if tag.name == "a" and tag.get('id') is not None and "fn" not in tag.get('id'):
+            current_section = tag.get('id')
+            sections[current_section] = ''
+        if (tag.name == "p" and tag.text != "" and current_section != '' ):
+            section_html = sections[current_section] + str(tag)
+            sections[current_section] = section_html
+
+    return sections
+
+def convert_header_html(title, css_file, output_dir):
+
+    title = title.upper()
+    author = "Plato"
+    css_file = os.path.basename(css_file)
+
+    converted_html = f"""<head>
+                            <meta http-equiv="content-type" content="text/html; charset="UTF-8">
+                            <title> {title} | {author} </title>
+                            <link href="{css_file}" rel="stylesheet">
+                            <script type="text/javascript" src="academy.js"></script>
+                        </head>"""
+
+    return converted_html
+
+def convert_section_paragraphs(section_html, speakers, dialogue_descriptors):
+
+    par_num, converted_html = 0, ""
+
+    for ptag in section_html.body.find_all('p'):
+
+        speaker, speech, sentences_html = "", "", ""
+
+        if ptag.text.strip() == '':
+            continue
+
+        split = ptag.text.split(':')
+        first = split[0].strip()
+
+        # Dialogue paragraph with Dialogue description
+        if first in dialogue_descriptors:
+            descriptor = first
+            description = split[1:][0]
+            description = description.replace("\n", "").replace("\t","")
+            description = re.sub(" +", " ", description)
+            description.strip()
+            converted_html = converted_html + "<div class=\"description\">" + "<div class=\"descriptor\">" + descriptor + "</div>" + description + "</div>"
+
+        # Dialogue paragraph w/ speaker
+        elif first in speakers:
+            speaker = first
+            speaker_html = "<h2 class=\"speaker\">" + speaker + "</h2>"
+            par_num +=1
+            par_num_html = "<span class=\"ref\">" + str(par_num).zfill(3) + "</span>"
+
+            speech = split[1:][0]
+            clean_speech_text = speech.replace("\n", "").replace("\t","")
+            clean_speech_text = re.sub(" +", " ", clean_speech_text)
+            clean_speech_text.strip()
+
+            par_sentences = nltk.sent_tokenize(clean_speech_text)
+            for sentence in par_sentences:
+                sentences_html = sentences_html + "<div class=\"sentence\"> " + sentence + "</div>"
+
+            converted_html = converted_html + "<div class=\"speech\">" + par_num_html + speaker_html + sentences_html + "</div>\n"
+
+        # Dialogue paragraph w/o speaker or dialogue description
+        else:
+            par_num +=1
+            par_num_html = "<span class=\"ref\">" + str(par_num).zfill(3) + "</span>"
+            par_text = ptag.text.replace("\n", "").replace("\t","")
+            par_text = re.sub(" +", " ", par_text)
+            par_text.strip()
+
+            par_sentences = nltk.sent_tokenize(par_text)
+            for sentence in par_sentences:
+                sentences_html = sentences_html + "<div class=\"sentence\"> " + sentence + "</div>"
+
+            converted_html = converted_html + "<div class=\"speech\">" + par_num_html + sentences_html + "</div>\n"
+
+        sentences_html, speaker_html = "", ""
+
+    return converted_html
+
+def convert_toc_html(toc):
+
+    toc_html = ''
+
+    for tocEntry in toc:
+        toc_html = toc_html + "<h3 class=\"dialogueTranslator\" lang=\"en\"><a href=\"#\" onclick='return showDiv("+ tocEntry + ")' >" + toc[tocEntry] + "</a></h3>"
+
+    return toc_html
+
+def convert_section_title_html(title, toc):
+
+    return "<h2>" + toc[title] + "</h2>"
+
+def convert_book_headings_html(file, meta_data):
+
+    title = file.upper()
+    author = "Plato"
+
+    headings_html = f"""<h1 class="dialogueTitle" lang="en">{title}</h1>
+                        <h2 class="dialogueAuthor" lang="en"><a href="https://en.wikipedia.org/wiki/Plato">{author}</a></h2>
+                        <h3 class="dialogueTranslator" lang="en">Translation by Jowett, Benjamin (1817-1893)</h3>
+                        <p class="dialogueCopyright"><small><a href="https://www.gutenberg.org/cache/epub/1643/pg1643-images.html">Guttenberg source file</a>&nbsp;and&nbsp;<a href="https://www.gutenberg.org/license">©License</a></small></p>"""
+
+    return headings_html
+
+def process_file_html(dialogue, css_file, output_dir, parsed_html, dialogue_descriptors, speakers):
+
+    meta_data = get_meta_tags(parsed_html)
+    toc = get_toc(parsed_html)
+    if toc is None:
+        print("Entries and TOC are not the same. Skipping dialogue")
+        return ""
+
+    sections = get_sections(parsed_html)
+
+    header_html = convert_header_html(dialogue, css_file, output_dir)
+    toc_html = convert_toc_html(toc)
+    book_headings_html = convert_book_headings_html(dialogue, meta_data)
+
+    converted_section_html = {}
+    sections_html = ''
+
+    for section in sections:
+        original_section_html = BeautifulSoup(sections[section], 'html5lib')
+
+        converted_section_html[section] = convert_section_paragraphs(original_section_html, speakers, dialogue_descriptors)
+        section_title_html = convert_section_title_html(section, toc)
+        sections_html = sections_html + f"""<div id="{section}" class="book_section">
+                                                {section_title_html}
+                                                {converted_section_html[section]}
+                                            </div>"""
+
+    converted_html = f"""<html>
+                            {header_html}
+                            <body class="default">
+                                <div class="container">
+                                    {book_headings_html}
+                                    {toc_html}
+                                    {sections_html}
+                                </div>
+                            </body>
+                        </html>"""
+    return converted_html
+
+dialogues = {
+    "alcibiadesI":"./sources/plato/plato-alcibiadesI-tr-jowett-guttenberg-modified.html",        # no toc, no entries
     "alcibiadesII":"./sources/plato/plato-alcibiadesII-tr-jowett-guttenberg.html",      # 
     "apology": "./sources/plato/plato-apology-tr-jowett-guttenberg.html",               # 
     "charmides":"./sources/plato/plato-charmides-tr-jowett-guttenberg.html",            # 
-    "cratylus":"./sources/plato/plato-cratylus-tr-jowett-guttenberg.html",              # footnotes
+    "cratylus":"./sources/plato/plato-cratylus-tr-jowett-guttenberg.html",              # Minor: add footnotes
     "crito":"./sources/plato/plato-crito-tr-jowett-guttenberg.html",                    # id=footer
     "critias":"./sources/plato/plato-critias-tr-jowett-guttenberg.html",                # 
     "euthydemus":"./sources/plato/plato-euthydemus-tr-jowett-guttenberg.html",          # 
     "euthyphro":"./sources/plato/plato-euthyphro-tr-jowett-guttenberg.html",            # 
-    "eryxias":"./sources/plato/plato-eryxias-tr-jowett-guttenberg.html",                # 
+    "eryxias":"./sources/plato/plato-eryxias-tr-jowett-guttenberg.html",                # remove appendix II? (different order?)
     "gorgias":"./sources/plato/plato-gorgias-tr-jowett-guttenberg.html",                # entries id (chap01) only
     "ion":"./sources/plato/plato-ion-tr-jowett-guttenberg.html",                        # 
     "laches":"./sources/plato/plato-laches-tr-jowett-guttenberg.html",                  # 
     "laws": "./sources/plato/plato-laws-tr-jowett-guttenberg.html",                     # 
-    "lesser":"./sources/plato/plato-lesser-hypias-tr-jowett-guttenberg.html",           # 
+    "lesser":"./sources/plato/plato-lesser-hypias-tr-jowett-guttenberg.html",           # TOC entries do not match document entries
     "lysis":"./sources/plato/plato-lysis-tr-jowett-guttenberg.html",                    # 
     "menexenus":"./sources/plato/plato-menexenus-tr-jowett-guttenberg.html",            # PERSONS toc entry
     "meno":  "./sources/plato/plato-meno-tr-jowett-guttenberg.html",                    # 
@@ -59,7 +236,7 @@ files = {
     "phaedrus":"./sources/plato/plato-phaedrus-tr-jowett-guttenberg.html",              # 
     "philebus":"./sources/plato/plato-philebus-tr-jowett-guttenberg.html",              # 
     "protagoras":"./sources/plato/plato-protagoras-tr-jowett-guttenberg.html",          # 
-    "republic":"./sources/plato/plato-republic-tr-jowett-guttenberg.html",              # 
+    "republic":"./sources/plato/plato-republic-tr-jowett-guttenberg.html",              # rror in original html: persons of dialogue is a toc entry
     "sophist":"./sources/plato/plato-sophist-tr-jowett-guttenberg.html",                # 
     "statesman":"./sources/plato/plato-statesman-tr-jowett.html",                       # 
     "symposium":"./sources/plato/plato-symposium-tr-jowett-guttenberg.html",            # 
@@ -67,204 +244,64 @@ files = {
     "theaetetus": "./sources/plato/plato-theaetetus-tr-jowett-guttenberg.html"          # 
 }
 
-dialogueDescriptors = [ 'PERSONS OF THE DIALOGUE', 'SCENE', 'PLACE OF THE NARRATION' ];
+dialogue_descriptors = [ 'PERSONS OF THE DIALOGUE', 'SCENE', 'PLACE OF THE NARRATION' ];
 
-characters = [
-        'ALCIBIADES', 'ANYTUS', 'APOLLODORUS', 'ATHENIAN', 'ATHENIAN STRANGER','BOY',
-        'CALLICLES', 'CHAEREPHON', 'CLEINIAS', 'COMPANION', 'CRATYLUS', 'CRITIAS', 'CRITO', 'ECHECRATES',
-        'ERASISTRATUS', 'ERYXIAS', 'EUCLID', 'EUDICUS', 'EUTHYPHRO', 'GORGIAS', 'HERMOCRATES', 'HERMOGENES',
-        'HIPPIAS', 'ION', 'LACHES', 'LYSIMACHUS', 'MEGILLUS', 'MELESIAS', 'MENEXENUS', 'MENO', 'NICIAS',
-        'PHAEDO', 'PHAEDRUS', 'PHILEBUS', 'POLUS', 'PROTARCHUS', 'SOCRATES', 'SON', 'STRANGER', 'TERPSION',
-        'THEAETETUS', 'THEODORUS', 'TIMAEUS', 'YOUNG SOCRATES' ]
+speakers = ['ALCIBIADES', 'ANYTUS', 'APOLLODORUS', 'ATHENIAN', 'ATHENIAN STRANGER','BOY',
+            'CALLICLES', 'CHAEREPHON', 'CLEINIAS', 'COMPANION', 'CRATYLUS', 'CRITIAS', 'CRITO', 'ECHECRATES',
+            'ERASISTRATUS', 'ERYXIAS', 'EUCLID', 'EUDICUS', 'EUTHYPHRO', 'GORGIAS', 'HERMOCRATES', 'HERMOGENES',
+            'HIPPIAS', 'ION', 'LACHES', 'LYSIMACHUS', 'MEGILLUS', 'MELESIAS', 'MENEXENUS', 'MENO', 'NICIAS',
+            'PHAEDO', 'PHAEDRUS', 'PHILEBUS', 'POLUS', 'PROTARCHUS', 'SOCRATES', 'SON', 'STRANGER', 'TERPSION',
+            'THEAETETUS', 'THEODORUS', 'TIMAEUS', 'YOUNG SOCRATES' ]
 
+num_args = len(sys.argv)
+if (num_args != 4 and num_args != 1):
+    print("Usage Error: \n All dialogues: python beautify_plato.py all css_file output_dir \n One dialogue: python beautify_plato.py meno css_file output_dir")
+    exit(1)
 
-# def getSections(toc, docHtml):
-#     sections = []
-
-#     #for tocEntry in toc:
-#     #    sectionHtml = docHtml.
-#     sections = toc
-#     print(sections)
-#     print(toc)
-#     exit(1)
-#     body = docHtml.descendants #find_all("body")
-#     for tag in body:
-#         if tag.name == "p":
-#             print(tag.name)
-#         elif tag.name == "a" & tag.get('id') == toc['a']:
-#             print(tag.get('href'))
-#             print(tag.get('id'))
-#         else:
-#             continue
-
-#     exit(1)
-#     tocEntry = toc[0]
-#     for toc in tocEntry:
-#         print (tocEntry)
-#         print (toc)
-#         print ("-\n")
-
-#         toc_siblings = docHtml.find(attrs={"href":toc}).next_siblings
-#         for tag in toc_siblings:
-#             print(tag.name)
-#             print(tag.string)
-#     #for tag in docHtml.find("toc").next_siblings:
-#     #if tag.name == "h1":
-#     #    break
-#     #else:
-#     #    html += unicode(tag)
-#     return sections
-
-file = "meno"
-
-#for file in files:
-#print("\n\nProcessing " + file + "\n")
-
-f = open(files[file], "r")
-parsed_html = BeautifulSoup(f,'html5lib')
-
-metaData = getMetaTags('meno',parsed_html.find_all('meta'))
-toc = getToc(parsed_html)
-#sections = getSections(toc, parsed_html)
-
-
-entries = []
-sections = {}
-currentSection = ''
-
-# Dialogue descriptions
-#print(metaData)
-#print(toc)
-#print(entries)
-#print(sections)
-
-for tag in parsed_html.body.find_all():
-    split = tag.text.split(':')
-    first = split[0].strip()
-    if first in dialogueDescriptors:
-        print("descriptor:" + first)
-        speech = split[1:][0]
-        clean_speech = speech.replace("\n", "").replace("\t","")
-        clean_speech = re.sub(" +", " ", clean_speech)
-        clean_speech.strip()
-        #converted_html = converted_html + "<div class=\"description\">" + "<div class=\"descriptor\">" + first + "</div>" + clean_speech + "</div>"
-
-#id = tag.get('id') if tag.get('id') is not None else ''
-        #print("id:" + id + " - " + tag.text)
-        #print("entry:" + tag['id'])
-        #print(tag.attrs.keys())
-        #print(tag.attrs.values())
-        #print(tag.text)
-exit(1)
-# Sections
-# for section in sections
-for tag in parsed_html.body.find_all():
-    if tag.name == "a" and tag.get('id') is not None:
-        currentSection = tag.get('id')
-    if (tag.name == "p" and tag.text != "" and currentSection != '' ):
-        section_html = sections[currentSection] + str(tag)
-        sections[currentSection] = section_html #.update({ currentSection: section_html })
-
-
-section_html = BeautifulSoup(sections["link2H_4_0003"],'html5lib')
-# Convert to Formatted HTML
-
-par_num = 0
-title = "Meno"
-author = "Plato"
-source_url = "http://"
-dialogue_url = "http://"
-css_file = "output/plato-jowett-default.css"
-# $metaTagsHtml
-converted_html = "<html> \
-                    <head>\
-                        <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\"> \
-                        <title>" + title + " | " + author + "</title> \
-                        <meta charset=\"utf-8\"> \
-                        <link href=\"output/plato-jowett-default.css\" rel=\"stylesheet\"> \
-                    </head> \
-                <body class=\"default\"> \
-                <div class=\"container\">";
-
-for ptag in section_html.body.find_all('p'):
-    speaker = ""
-    speech = ""
-    sentences_html = ""
-
-#    if ptag.text == '':
-#        continue
-
-    split = ptag.text.split(':')
-    first = split[0].strip()
-
-    # Dialogue paragraph with Dialogue description
-    if first in dialogueDescriptors:
-        speech = split[1:][0]
-        #print(speech)
-        #exit(1)
-        clean_speech = speech.replace("\n", "").replace("\t","")
-        clean_speech = re.sub(" +", " ", clean_speech)
-        clean_speech.strip()
-        converted_html = converted_html + "<div class=\"description\">" + "<div class=\"descriptor\">" + first + "</div>" + clean_speech + "</div>"
-
-    # Dialogue paragraph w/ speaker
-    elif (first in characters):
-        speaker_html = "<h2 class=\"speaker\">" + first + "</h2>"
-        par_num_html = "<span class=\"ref\">" + str(par_num).zfill(3) + "</span>"
-
-        #paragraph text i.e. text of speaker
-        speech = split[1:][0]
-        clean_speech_text = speech.replace("\n", "").replace("\t","")
-        clean_speech_text = re.sub(" +", " ", clean_speech_text)
-        clean_speech_text.strip()
-
-        par_sentences = nltk.sent_tokenize(clean_speech_text)
-        for sentence in par_sentences:
-            sentences_html = sentences_html + "<div class=\"sentence\"> " + sentence + "</div>"
-
-        #converted_speech_html = "<p class=\"speech\">" + clean_speech + "</p>"
-        #speech.join(split[1:])
-        converted_html = converted_html + "<div class=\"speech\">" + par_num_html + speaker_html + sentences_html + "</div>\n"
-        par_num +=1
-
-    # Dialogue paragraph w/o speaker or dialogue description
+if (num_args == 4):
+    # Check if dialogue arg valid
+    if sys.argv[1] in dialogues:
+        dialogues = {sys.argv[1]: dialogues[sys.argv[1]]}
+    elif sys.argv[1] == 'all':
+        dialogues = dialogues
     else:
-        par_num_html = "<span class=\"ref\">" + str(par_num).zfill(3) + "</span>"
-        clean_speech_text = ptag.text.replace("\n", "").replace("\t","")
-        clean_speech_text = re.sub(" +", " ", clean_speech_text)
-        clean_speech_text.strip()
+        print("Usage Error: dialogue not found: use valid dialogue name or 'all' for all dialogues")
+        exit(1)
 
-        par_sentences = nltk.sent_tokenize(clean_speech_text)
-        for sentence in par_sentences:
-            sentences_html = sentences_html + "<div class=\"sentence\">" + sentence + "</div>"
+    # Check css file exists
+    css_file = sys.argv[2]
+    #if not os.access("./" + css_file, os.R_OK):
+    if not os.path.exists(css_file):
+        print("Error: CSS file " + css_file + " not found or not readable")
+        exit(1)
 
-        converted_html = converted_html + "<div class=\"speech\">" + par_num_html + sentences_html + "</div>\n"
-        par_num += 1
+    # # Check output dir exists
+    output_dir = sys.argv[3]
+    if not os.path.exists(output_dir):
+        print("Error: output directory " + output_dir + " not found")
+        exit(1)
 
-    sentences_html = ''
-    speaker_html = ''
+if (num_args == 1):
+    dialogues = dialogues
+    css_file = "src/plato-jowett-default.css"
+    js_file = "src/academy.js"
+    output_dir = "output"
 
-converted_html = converted_html + '</div></body></html>'
+for dialogue in dialogues:
 
-f = open("test.html", "w")
-f.write(converted_html)
-f.close()
+    print("Processing " + dialogue + ":")
+    if dialogue == 'lysis' or dialogue == 'republic':
+        print("Skipping " + dialogue + ": error in original html: persons of dialogue is a toc entry")
+        continue
 
-#print(converted_html)
-#print(ptag)
-#time.sleep(1)
-#print(parsed_html.body.find('div', attrs={'class':'container'}).text)
-#print(f.read())
-#css_filename = "./css/greek-learner-text.css"
-#output_filename = "./output/plato-meno-py-formatted.html"
-#$parNumFormatted = str_pad($paragraphNum, 3, '0', STR_PAD_LEFT);
-#$speakerH2 = ($speaker != "") ? "<h2 class=\"speaker\">" . $speaker . "</h2>" : '';
-#$parHtml = '';
-#foreach ($parSentences as $sentence)
-#   $parHtml .= "<div class=\"sentence\">" . $sentence . "&nbsp;</div>";
-#   $parDiv = "<div class=\"speech\">
-#       <span class=\"ref\">" . $parNumFormatted . "</span>" .
-#       $speakerH2 .
-#       $parHtml .
-#       "</div>";
-# return $parDiv;
+    f = open(dialogues[dialogue], "r")
+    parsed_html = BeautifulSoup(f, 'html5lib')
+    f.close()
+
+    converted_html = process_file_html(dialogue, css_file, output_dir, parsed_html, dialogue_descriptors, speakers)
+    fout = open("output/" + dialogue + ".html", "w")
+    fout.write(converted_html)
+    fout.close()
+
+shutil.copy(css_file, output_dir)
+shutil.copy("src/academy.js", output_dir)

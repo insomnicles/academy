@@ -348,7 +348,6 @@ function dialogueHtml($metaTags, $cssFile, $dialogueUrl, $dialogueDescription, a
                 </head>";
 
     $tocHtml = '';
-    print_r($toc);
     foreach ($toc as $tocEntry)
         $tocHtml.= "<a href=\"".$tocEntry['href']."\">".$tocEntry['content']."</a><br>";
 
@@ -369,7 +368,7 @@ function dialogueHtml($metaTags, $cssFile, $dialogueUrl, $dialogueDescription, a
 
     $dialogueTocEntry = count($toc) - 1;
     $dialogueStart = "<a href=\"".$toc[$dialogueTocEntry]['href']."\">".$toc['content']."</a>";
-    // Body of Dialogue
+
     $beautifiedHtml =
         "<html>".
             $header.
