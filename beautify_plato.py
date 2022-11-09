@@ -1,4 +1,3 @@
-import time
 import re
 import nltk
 import sys
@@ -25,23 +24,43 @@ def get_meta_tags(parsed_html):
 
 def get_toc(parsed_html):
 
-    entries, sections, toc = [], {}, {}
+    entries, toc = [], {}
+
+    # toc: id =
+    # entry tags href=['chap', 'link2H']
+    # footnote_tags ['fn',]
 
     for tag in parsed_html.body.find_all():
         if (tag.name == "a"):
-            # TOC Entry
-            if tag.get('class') is not None and 'pginternal' in tag.get('class'):
-                link=tag.get("href")[1:]
-                if "fn" not in link:
-                    toc[link] = tag.text.strip()
-                    sections[link] = ''
-            # Section Link
-            elif tag.get('id') is not None:
-                if "fn" not in tag.get('id'):
-                    entries.append(tag['id'])
+
+            # Skip Footnotes
+            if tag.get('href') is not None and ("#f" in tag.get('href') or "#r" in tag.get('href') or "fn" in tag.get('href') or "#Footnote" in tag.get('href')):
+                continue
+            if tag.get('id') is not None and ("fn" in tag.get('id') or "Footnote" in tag.get('id')):
+                continue
+
+            # entry
+            if tag.get('id') is not None:
+                entries.append(tag['id'])
+
+            # toc entry
+            if tag.get('href') is None:
+                continue
+            if "#link2H" in tag.get('href'):
+                toc[tag.get("href")[1:]] = tag.text.strip()
+            if "#chap" in tag.get('href'):
+                toc[tag.get("href")[1:]] = tag.text.strip()
+            if "#pref" in tag.get('href'):
+                toc[tag.get("href")[1:]] = tag.text.strip()
+            if "#Pg" in tag.get('href'):
+                toc[tag.get("href")[1:]] = tag.text.strip()
+            if "#part" in tag.get('href'):
+                toc[tag.get("href")[1:]] = tag.text.strip()
 
     if len(entries) != len(toc):
         print("TOC entries do not match document entries")
+        print(toc)
+        print(entries)
         return None
 
     return toc
@@ -166,10 +185,21 @@ def convert_book_headings_html(file, meta_data):
     title = file.upper()
     author = "Plato"
 
+    if (file == 'cleitophon'):
+        translator = "W.R.M. Lamb"
+        source = "Plato in Twelve Volumes, Vol. 9 translated by W.R.M. Lamb. Cambridge, MA, Harvard University Press; London, William Heinemann Ltd. 1925."
+        copyright= "Persius Project: <a href=\"https://creativecommons.org/licenses/by-sa/3.0\">Creative Commons Attribution-ShareAlike 3.0 United States</a>"
+    else:
+        translator = "Translation by Jowett, Benjamin (1817-1893)"
+        source = ''
+        copyright = "<a href=\"https://www.gutenberg.org/cache/epub/1643/pg1643-images.html\">Guttenberg source file</a>&nbsp;and&nbsp;<a href=\"https://www.gutenberg.org/license\">©License</a>"
+
     headings_html = f"""<h1 class="dialogueTitle" lang="en">{title}</h1>
                         <h2 class="dialogueAuthor" lang="en"><a href="https://en.wikipedia.org/wiki/Plato">{author}</a></h2>
-                        <h3 class="dialogueTranslator" lang="en">Translation by Jowett, Benjamin (1817-1893)</h3>
-                        <p class="dialogueCopyright"><small><a href="https://www.gutenberg.org/cache/epub/1643/pg1643-images.html">Guttenberg source file</a>&nbsp;and&nbsp;<a href="https://www.gutenberg.org/license">©License</a></small></p>"""
+                        <h3 class="dialogueTranslator" lang="en">{translator}</h3>
+                        <p style="padding:0px" class="dialogueCopyright"><small>{source}</small></p>
+                        <p class="dialogueCopyright"><small>{copyright}</small></p>
+                        """
 
     return headings_html
 
@@ -182,6 +212,8 @@ def process_file_html(dialogue, css_file, output_dir, parsed_html, dialogue_desc
         return ""
 
     sections = get_sections(parsed_html)
+    #print(toc)
+    #print(sections.keys())
 
     header_html = convert_header_html(dialogue, css_file, output_dir)
     toc_html = convert_toc_html(toc)
@@ -212,42 +244,59 @@ def process_file_html(dialogue, css_file, output_dir, parsed_html, dialogue_desc
                         </html>"""
     return converted_html
 
+
+# TOC marker, Entry Marker; Description Marker;
 dialogues = {
-    "alcibiadesI":"./sources/plato/plato-alcibiadesI-tr-jowett-guttenberg-modified.html",        # no toc, no entries
+    # Plato
+    "alcibiadesI":"./sources/plato/plato-alcibiadesI-tr-jowett-guttenberg-modified.html",# no toc, no entries
     "alcibiadesII":"./sources/plato/plato-alcibiadesII-tr-jowett-guttenberg.html",      # 
     "apology": "./sources/plato/plato-apology-tr-jowett-guttenberg.html",               # 
     "charmides":"./sources/plato/plato-charmides-tr-jowett-guttenberg.html",            # 
-    "cratylus":"./sources/plato/plato-cratylus-tr-jowett-guttenberg.html",              # Minor: add footnotes
-    "crito":"./sources/plato/plato-crito-tr-jowett-guttenberg.html",                    # id=footer
+    "cleitophon":"./sources/plato/plato-cleitophon-tr-lamb.html",                       # 
+    "cratylus":"./sources/plato/plato-cratylus-tr-jowett-guttenberg.html",              # Minor: translator in par; descriptions not parsed; add footnotes
+    "crito":"./sources/plato/plato-crito-tr-jowett-guttenberg.html",                    # MAJOR: No structure in HTML
     "critias":"./sources/plato/plato-critias-tr-jowett-guttenberg.html",                # 
     "euthydemus":"./sources/plato/plato-euthydemus-tr-jowett-guttenberg.html",          # 
     "euthyphro":"./sources/plato/plato-euthyphro-tr-jowett-guttenberg.html",            # 
-    "eryxias":"./sources/plato/plato-eryxias-tr-jowett-guttenberg.html",                # remove appendix II? (different order?)
-    "gorgias":"./sources/plato/plato-gorgias-tr-jowett-guttenberg.html",                # entries id (chap01) only
+    "eryxias":"./sources/plato/plato-eryxias-tr-jowett-guttenberg.html",                # 
+    "gorgias":"./sources/plato/plato-gorgias-tr-jowett-guttenberg.html",                # 
     "ion":"./sources/plato/plato-ion-tr-jowett-guttenberg.html",                        # 
-    "laches":"./sources/plato/plato-laches-tr-jowett-guttenberg.html",                  # 
+    "laches":"./sources/plato/plato-laches-tr-jowett-guttenberg.html",                  # Minor: PERSONS in TOC
     "laws": "./sources/plato/plato-laws-tr-jowett-guttenberg.html",                     # 
-    "lesser":"./sources/plato/plato-lesser-hypias-tr-jowett-guttenberg.html",           # TOC entries do not match document entries
-    "lysis":"./sources/plato/plato-lysis-tr-jowett-guttenberg.html",                    # 
-    "menexenus":"./sources/plato/plato-menexenus-tr-jowett-guttenberg.html",            # PERSONS toc entry
+    "lesser-hyppias":"./sources/plato/plato-lesser-hypias-tr-jowett-guttenberg.html",   # MAJOR: extra entries in TOC; entries in incorrected places in HTML
+    "lysis":"./sources/plato/plato-lysis-tr-jowett-guttenberg.html",                    # Minor: PERSONS toc entry
+    "menexenus":"./sources/plato/plato-menexenus-tr-jowett-guttenberg.html",            # Minor: PERSONS toc entry
     "meno":  "./sources/plato/plato-meno-tr-jowett-guttenberg.html",                    # 
     "parmenides":"./sources/plato/plato-parmenides-tr-jowett-guttenberg.html",          # 
-    "phaedo":"./sources/plato/plato-phaedo-tr-jowett-guttenberg.html",                  # 
+    "phaedo":"./sources/plato/plato-phaedo-tr-jowett-guttenberg.html",                  # Minor: PERSONS OF THE DIALOGUE in dialogue para
     "phaedrus":"./sources/plato/plato-phaedrus-tr-jowett-guttenberg.html",              # 
     "philebus":"./sources/plato/plato-philebus-tr-jowett-guttenberg.html",              # 
     "protagoras":"./sources/plato/plato-protagoras-tr-jowett-guttenberg.html",          # 
-    "republic":"./sources/plato/plato-republic-tr-jowett-guttenberg.html",              # rror in original html: persons of dialogue is a toc entry
+    "republic":"./sources/plato/plato-republic-tr-jowett-guttenberg.html",              # Minor: PERSONS in toc
     "sophist":"./sources/plato/plato-sophist-tr-jowett-guttenberg.html",                # 
     "statesman":"./sources/plato/plato-statesman-tr-jowett.html",                       # 
     "symposium":"./sources/plato/plato-symposium-tr-jowett-guttenberg.html",            # 
     "timaeus":"./sources/plato/plato-timaeus-tr-jowett-guttenberg.html",                # 
-    "theaetetus": "./sources/plato/plato-theaetetus-tr-jowett-guttenberg.html"          # 
+    "theaetetus": "./sources/plato/plato-theaetetus-tr-jowett-guttenberg.html",         # 
+    "7thletter": "./sources/plato/plato-7thLetter-tr-bury.html",                        #
+
+    # Aristotle
+    "athenian-constitution": "./sources/aristotle/aristotle-the-athenian-constitution-tr-kenyon-guttenberg.html",   # 
+    "categories": "./sources/aristotle/aristotle-the-categories-tr-edghill-guttenberg.html",                        # 
+    "history-of-animals": "./sources/aristotle/aristotle-history-of-animals-tr-cresswell-guttenberg.html",          # MAJOR: inconsistent structure; index and toc anchors are same
+    "nico-ethics": "./sources/aristotle/aristotle-the-nicomachean-ethics-tr-smith-ja-guttenberg.html",              # 
+    "poetics-bywater": "./sources/aristotle/aristotle-on-the-art-of-poetry-tr-bywater-guttenberg.html",             # 
+    "poetics-butcher": "./sources/aristotle/aristotle-the-poetics-tr-butcher-guttenberg.html",                      # 
+    "treatise-on-government": "./sources/aristotle/aristotle-treatise-on-government-tr-ellis-guttenberg.html",      # 
+
+    # Xenophon
+    "memorabilia": "./sources/xenophon/xenophon-memorabilia-tr-dakyns-guttenberg.html"
 }
 
 dialogue_descriptors = [ 'PERSONS OF THE DIALOGUE', 'SCENE', 'PLACE OF THE NARRATION' ];
 
 speakers = ['ALCIBIADES', 'ANYTUS', 'APOLLODORUS', 'ATHENIAN', 'ATHENIAN STRANGER','BOY',
-            'CALLICLES', 'CHAEREPHON', 'CLEINIAS', 'COMPANION', 'CRATYLUS', 'CRITIAS', 'CRITO', 'ECHECRATES',
+            'CALLICLES', 'CHAEREPHON', 'CLEINIAS', 'COMPANION', 'CLEITOPHON', 'CRATYLUS', 'CRITIAS', 'CRITO', 'ECHECRATES',
             'ERASISTRATUS', 'ERYXIAS', 'EUCLID', 'EUDICUS', 'EUTHYPHRO', 'GORGIAS', 'HERMOCRATES', 'HERMOGENES',
             'HIPPIAS', 'ION', 'LACHES', 'LYSIMACHUS', 'MEGILLUS', 'MELESIAS', 'MENEXENUS', 'MENO', 'NICIAS',
             'PHAEDO', 'PHAEDRUS', 'PHILEBUS', 'POLUS', 'PROTARCHUS', 'SOCRATES', 'SON', 'STRANGER', 'TERPSION',
@@ -290,11 +339,12 @@ if (num_args == 1):
 for dialogue in dialogues:
 
     print("Processing " + dialogue + ":")
-    if dialogue == 'lysis' or dialogue == 'republic':
+    if dialogue == 'crito' or dialogue == 'lesser-hypias' or dialogue == 'history-of-animals':
         print("Skipping " + dialogue + ": error in original html: persons of dialogue is a toc entry")
+        # print("Using modified guttenberg source:")
         continue
 
-    f = open(dialogues[dialogue], "r")
+    f = open(dialogues[dialogue], "rb")
     parsed_html = BeautifulSoup(f, 'html5lib')
     f.close()
 
