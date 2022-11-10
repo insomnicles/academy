@@ -36,7 +36,7 @@ def get_toc(parsed_html):
             # Skip Footnotes
             if tag.get('href') is not None and ("#f" in tag.get('href') or "#r" in tag.get('href') or "fn" in tag.get('href') or "#Footnote" in tag.get('href')):
                 continue
-            if tag.get('id') is not None and ("fn" in tag.get('id') or "Footnote" in tag.get('id')):
+            if tag.get('id') is not None and ("fn" in tag.get('id') or "Footnote" in tag.get('id') ):
                 continue
 
             # entry
@@ -254,7 +254,8 @@ dialogues = {
     "charmides":"./sources/plato/plato-charmides-tr-jowett-guttenberg.html",            # 
     "cleitophon":"./sources/plato/plato-cleitophon-tr-lamb.html",                       # 
     "cratylus":"./sources/plato/plato-cratylus-tr-jowett-guttenberg.html",              # Minor: translator in par; descriptions not parsed; add footnotes
-    "crito":"./sources/plato/plato-crito-tr-jowett-guttenberg.html",                    # MAJOR: No structure in HTML
+    #"crito":"./sources/plato/plato-crito-tr-jowett-guttenberg.html",                    # MAJOR: No structure in HTML
+    "crito":"./sources/plato/modified/plato-crito-tr-jowett-guttenberg-modified.html",                    # MAJOR: No structure in HTML
     "critias":"./sources/plato/plato-critias-tr-jowett-guttenberg.html",                # 
     "euthydemus":"./sources/plato/plato-euthydemus-tr-jowett-guttenberg.html",          # 
     "euthyphro":"./sources/plato/plato-euthyphro-tr-jowett-guttenberg.html",            # 
@@ -263,7 +264,8 @@ dialogues = {
     "ion":"./sources/plato/plato-ion-tr-jowett-guttenberg.html",                        # 
     "laches":"./sources/plato/plato-laches-tr-jowett-guttenberg.html",                  # Minor: PERSONS in TOC
     "laws": "./sources/plato/plato-laws-tr-jowett-guttenberg.html",                     # 
-    "lesser-hyppias":"./sources/plato/plato-lesser-hypias-tr-jowett-guttenberg.html",   # MAJOR: extra entries in TOC; entries in incorrected places in HTML
+    #"lesser-hyppias":"./sources/plato/plato-lesser-hypias-tr-jowett-guttenberg.html",   # MAJOR: extra entries in TOC; entries in incorrected places in HTML
+    "lesser-hyppias":"./sources/plato/modified/plato-lesser-hypias-tr-jowett-guttenberg-modified.html",   # MAJOR: extra entries in TOC; entries in incorrected places in HTML
     "lysis":"./sources/plato/plato-lysis-tr-jowett-guttenberg.html",                    # Minor: PERSONS toc entry
     "menexenus":"./sources/plato/plato-menexenus-tr-jowett-guttenberg.html",            # Minor: PERSONS toc entry
     "meno":  "./sources/plato/plato-meno-tr-jowett-guttenberg.html",                    # 
@@ -339,7 +341,7 @@ if (num_args == 1):
 for dialogue in dialogues:
 
     print("Processing " + dialogue + ":")
-    if dialogue == 'crito' or dialogue == 'lesser-hypias' or dialogue == 'history-of-animals':
+    if dialogue == 'lesser-hypias' or dialogue == 'history-of-animals':
         print("Skipping " + dialogue + ": error in original html: persons of dialogue is a toc entry")
         # print("Using modified guttenberg source:")
         continue
