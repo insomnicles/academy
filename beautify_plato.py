@@ -8,27 +8,24 @@ import os.path
 
 def get_meta_tags(parsed_html):
 
-    metaInfo, subjects = [], []
+    meta_data, subjects = {}, []
 
     for tag in parsed_html.find_all('meta'):
         name = tag.get('name')
         content = tag.get('content')
         if name is not None and content is not None:
             if name == 'dc.subject':
-                subjects = ''
+                subjects.append(content)
             else:
-                metaInfo.append({ tag.get('name'): tag.get('content') })
-    metaInfo.append({'subjects': subjects})
+                meta_data[tag.get('name')] = tag.get('content')
 
-    return metaInfo
+    if 'subjects' in meta_data.keys():
+        meta_data['subjects'] = subjects
+    return meta_data
 
 def get_toc(parsed_html):
 
     entries, toc = [], {}
-
-    # toc: id =
-    # entry tags href=['chap', 'link2H']
-    # footnote_tags ['fn',]
 
     for tag in parsed_html.body.find_all():
         if (tag.name == "a"):
@@ -82,7 +79,6 @@ def get_sections(parsed_html):
 
     current_section, sections = '', {}
 
-    # for section in sections
     for tag in parsed_html.body.find_all():
         if tag.name == "a" and tag.get('id') is not None and "fn" not in tag.get('id'):
             current_section = tag.get('id')
@@ -93,17 +89,32 @@ def get_sections(parsed_html):
 
     return sections
 
-def convert_header_html(title, css_file, output_dir):
+def convert_header_html(css_file, source_url, meta_data):
 
-    title = title.upper()
-    author = "Plato"
+    if not meta_data:
+        return ''
+
+    title = meta_data['dc.title']
+    author = meta_data['dc.creator']
+    guttenberg_meta_tags = ''
+
     css_file = os.path.basename(css_file)
+    javascript_file = "academy.js"
+
+    for meta_tag_key in meta_data:
+        if meta_tag_key == 'subjects':
+            for subject in meta_data['subjects']:
+                guttenberg_meta_tags += f"""<meta name="dc.subject" content="{subject}">\n"""
+        else:
+            guttenberg_meta_tags += f"""<meta name="{meta_tag_key}" content="{meta_data[meta_tag_key]}">\n"""
 
     converted_html = f"""<head>
                             <meta http-equiv="content-type" content="text/html; charset="UTF-8">
+                            <meta name="local.source_file" content="{source_url}>
+                            {guttenberg_meta_tags}
                             <title> {title} | {author} </title>
                             <link href="{css_file}" rel="stylesheet">
-                            <script type="text/javascript" src="academy.js"></script>
+                            <script type="text/javascript" src="{javascript_file}"></script>
                         </head>"""
 
     return converted_html
@@ -116,20 +127,41 @@ def convert_section_paragraphs(section_html, speakers, dialogue_descriptors):
 
         speaker, speech, sentences_html = "", "", ""
 
-        if ptag.text.strip() == '':
+        clean_text = re.sub("\n", "", ptag.text)
+        clean_text = re.sub(" ", "", clean_text)
+        clean_text.strip()
+
+        if not clean_text:
             continue
 
-        split = ptag.text.split(':')
+        clean_text = ptag.text.replace("\n", " ").replace("\t"," ")
+        clean_text = re.sub(" +", " ", clean_text)
+        clean_text.strip()
+
+        if not clean_text:
+            continue
+
+        split = clean_text.split(':')
         first = split[0].strip()
 
-        # Dialogue paragraph with Dialogue description
+        # Stephanous Annotation Tags
+        children= ptag.findChild()
+        if children is not None:
+            for child in children:
+                if (child.name == 'span'):
+                    print('STEPHANUS SPAN FOUND')
+                print("CHILD:" + child.text + "ZZZ")
+
+        # Dialogue description
         if first in dialogue_descriptors:
             descriptor = first
-            description = split[1:][0]
-            description = description.replace("\n", " ").replace("\t"," ")
-            description = re.sub(" +", " ", description)
-            description.strip()
-            converted_html = converted_html + "<div class=\"description\">" + "<div class=\"descriptor\">" + descriptor + "</div>" + description + "</div>"
+            description = ': '.join(split[1:])
+
+            converted_html = f"""
+                                {converted_html}
+                                <div class="description">
+                                    <div class="book_description">{descriptor}:</div>{description}
+                                </div>"""
 
         # Dialogue paragraph w/ speaker
         elif first in speakers:
@@ -138,30 +170,24 @@ def convert_section_paragraphs(section_html, speakers, dialogue_descriptors):
             par_num +=1
             par_num_html = "<span class=\"ref\">" + str(par_num).zfill(3) + "</span>"
 
-            speech = split[1:][0]
-            clean_speech_text = speech.replace("\n", " ").replace("\t"," ")
-            clean_speech_text = re.sub(" +", " ", clean_speech_text)
-            clean_speech_text.strip()
+            speech = ': '.join(split[1:])
 
-            par_sentences = nltk.sent_tokenize(clean_speech_text)
+            par_sentences = nltk.sent_tokenize(speech)
             for sentence in par_sentences:
                 sentences_html = sentences_html + "<div class=\"sentence\"> " + sentence + "</div>"
 
             converted_html = converted_html + "<div class=\"speech\">" + par_num_html + speaker_html + sentences_html + "</div>\n"
 
-        # Dialogue paragraph w/o speaker or dialogue description
+        # Regular Text Paragraph (w/o speaker or dialogue description)
         else:
             par_num +=1
             par_num_html = "<span class=\"ref\">" + str(par_num).zfill(3) + "</span>"
-            par_text = ptag.text.replace("\n", " ").replace("\t"," ")
-            par_text = re.sub(" +", " ", par_text)
-            par_text.strip()
 
-            par_sentences = nltk.sent_tokenize(par_text)
+            par_sentences = nltk.sent_tokenize(clean_text)
             for sentence in par_sentences:
                 sentences_html = sentences_html + "<div class=\"sentence\"> " + sentence + "</div>"
 
-            converted_html = converted_html + "<div class=\"speech\">" + par_num_html + sentences_html + "</div>\n"
+            converted_html = converted_html + f"""<div class="speech">{par_num_html} {sentences_html}</div>\n"""
 
         sentences_html, speaker_html = "", ""
 
@@ -172,7 +198,9 @@ def convert_toc_html(toc):
     toc_html = ''
 
     for tocEntry in toc:
-        toc_html = toc_html + "<h3 class=\"dialogueTranslator\" lang=\"en\"><a href=\"#\" onclick='return showDiv("+ tocEntry + ")' >" + toc[tocEntry] + "</a></h3>"
+        toc_html = toc_html + f"""  <h3 class="book_toc" lang="en">
+                                        <a href="#" onclick='return showDiv({tocEntry})' >{toc[tocEntry]}</a>
+                                    </h3>"""
 
     return toc_html
 
@@ -180,30 +208,32 @@ def convert_section_title_html(title, toc):
 
     return "<h2>" + toc[title] + "</h2>"
 
-def convert_book_headings_html(file, meta_data):
+def convert_book_headings_html(meta_data):
 
-    title = file.upper()
-    author = "Plato"
+    if not meta_data:
+        return ''
 
-    if (file == 'cleitophon'):
+
+    title = meta_data['dc.title']
+    author = meta_data['dc.creator']
+    translator = meta_data['marcrel.trl'] if 'marcrel.trl' in meta_data.keys() else ''
+
+    if (title == 'cleitophon'):
         translator = "W.R.M. Lamb"
-        source = "Plato in Twelve Volumes, Vol. 9 translated by W.R.M. Lamb. Cambridge, MA, Harvard University Press; London, William Heinemann Ltd. 1925."
-        copyright= "Persius Project: <a href=\"https://creativecommons.org/licenses/by-sa/3.0\">Creative Commons Attribution-ShareAlike 3.0 United States</a>"
+        source = "Persius Project: Plato in Twelve Volumes, Vol. 9. 1925"
+        copyright= "<a href=\"https://creativecommons.org/licenses/by-sa/3.0\">Creative Commons Attribution-ShareAlike 3.0 United States</a>"
     else:
-        translator = "Translation by Jowett, Benjamin (1817-1893)"
-        source = ''
-        copyright = "<a href=\"https://www.gutenberg.org/cache/epub/1643/pg1643-images.html\">Guttenberg source file</a>&nbsp;and&nbsp;<a href=\"https://www.gutenberg.org/license\">©License</a>"
-
-    headings_html = f"""<h1 class="dialogueTitle" lang="en">{title}</h1>
-                        <h2 class="dialogueAuthor" lang="en"><a href="https://en.wikipedia.org/wiki/Plato">{author}</a></h2>
-                        <h3 class="dialogueTranslator" lang="en">{translator}</h3>
-                        <p style="padding:0px" class="dialogueCopyright"><small>{source}</small></p>
-                        <p class="dialogueCopyright"><small>{copyright}</small></p>
+        source = "<a href=\"" + meta_data['dcterms.source'] + "\">Source</a>"
+        copyright = "https://www.gutenberg.org/license"
+        headings_html = f"""
+                        <h1 class="book_title" lang="en">{title}</h1>
+                        <h2 class="book_author" lang="en"><a href="https://en.wikipedia.org/wiki/Plato">{author}</a></h2>
+                        <h3 class="book_translator" lang="en">Tr. {translator}</h3>
+                        <p class="book_source_and_license" ><small>{source}&nbsp;and&nbsp;<a href="{copyright}">©License</a></p>
                         """
-
     return headings_html
 
-def process_file_html(dialogue, css_file, output_dir, parsed_html, dialogue_descriptors, speakers):
+def process_file_html(source_url, css_file, parsed_html, dialogue_descriptors, speakers):
 
     meta_data = get_meta_tags(parsed_html)
     toc = get_toc(parsed_html)
@@ -212,12 +242,10 @@ def process_file_html(dialogue, css_file, output_dir, parsed_html, dialogue_desc
         return ""
 
     sections = get_sections(parsed_html)
-    #print(toc)
-    #print(sections.keys())
 
-    header_html = convert_header_html(dialogue, css_file, output_dir)
+    header_html = convert_header_html(css_file, source_url, meta_data)
     toc_html = convert_toc_html(toc)
-    book_headings_html = convert_book_headings_html(dialogue, meta_data)
+    book_headings_html = convert_book_headings_html(meta_data)
 
     converted_section_html = {}
     sections_html = ''
@@ -249,10 +277,10 @@ def process_file_html(dialogue, css_file, output_dir, parsed_html, dialogue_desc
 dialogues = {
     # Plato
     "alcibiadesI":"./sources/plato/plato-alcibiadesI-tr-jowett-guttenberg-modified.html",# no toc, no entries
-    "alcibiadesII":"./sources/plato/plato-alcibiadesII-tr-jowett-guttenberg.html",      # 
+    "alcibiadesII":"./sources/plato/plato-alcibiadesII-tr-jowett-guttenberg.html",      # MINOR: no marcel.tr tag
     "apology": "./sources/plato/plato-apology-tr-jowett-guttenberg.html",               # 
     "charmides":"./sources/plato/plato-charmides-tr-jowett-guttenberg.html",            # 
-    "cleitophon":"./sources/plato/plato-cleitophon-tr-lamb.html",                       # 
+    "cleitophon":"./sources/plato/modified/plato-cleitophon-tr-lamb.html",                       # 
     "cratylus":"./sources/plato/plato-cratylus-tr-jowett-guttenberg.html",              # Minor: translator in par; descriptions not parsed; add footnotes
     #"crito":"./sources/plato/plato-crito-tr-jowett-guttenberg.html",                   # MAJOR: No structure in HTML
     "crito":"./sources/plato/modified/plato-crito-tr-jowett-guttenberg-modified.html",  # 
@@ -293,7 +321,7 @@ dialogues = {
     "treatise-on-government": "./sources/aristotle/aristotle-treatise-on-government-tr-ellis-guttenberg.html",      # 
 
     # Xenophon
-    "memorabilia": "./sources/xenophon/xenophon-memorabilia-tr-dakyns-guttenberg.html"
+    "memorabilia": "./sources/xenophon/xenophon-memorabilia-tr-dakyns-guttenberg.html"                              # MAJOR: not meta-data in HTML
 }
 
 dialogue_descriptors = [ 'PERSONS OF THE DIALOGUE', 'SCENE', 'PLACE OF THE NARRATION' ];
@@ -319,19 +347,7 @@ if (num_args == 4):
     else:
         print("Usage Error: dialogue not found: use valid dialogue name or 'all' for all dialogues")
         exit(1)
-
-    # Check css file exists
     css_file = sys.argv[2]
-    #if not os.access("./" + css_file, os.R_OK):
-    if not os.path.exists(css_file):
-        print("Error: CSS file " + css_file + " not found or not readable")
-        exit(1)
-
-    # # Check output dir exists
-    output_dir = sys.argv[3]
-    if not os.path.exists(output_dir):
-        print("Error: output directory " + output_dir + " not found")
-        exit(1)
 
 if (num_args == 1):
     dialogues = dialogues
@@ -339,19 +355,37 @@ if (num_args == 1):
     js_file = "src/academy.js"
     output_dir = "output"
 
+# Check if css file exists and is readable
+if not os.access(css_file, os.R_OK):
+    print("Error: CSS file " + css_file + " not found or not readable")
+    exit(1)
+
+# Check if output directory exists and is readable
+output_dir = sys.argv[3]
+if not os.path.exists(output_dir):
+    print("Error: output directory " + output_dir + " not found")
+    exit(1)
+
 for dialogue in dialogues:
 
-    print("Processing " + dialogue + ":")
-    if dialogue == 'lesser-hypias' or dialogue == 'history-of-animals':
-        print("Skipping " + dialogue + ": error in original html: persons of dialogue is a toc entry")
+    print("Processing " + dialogue)
+
+    # Skip files with incorrect HTML structure
+    if dialogue == 'history-of-animals' or dialogue == 'memorabilia':
+        print("Skipping " + dialogue + ": error in original html")
         # print("Using modified guttenberg source:")
+        continue
+
+    # Check if source file exists and is readable
+    if not os.access(dialogues[dialogue], os.R_OK):
+        print("Error: source file " + dialogues[dialogue] + " not found or not readable")
         continue
 
     f = open(dialogues[dialogue], "rb")
     parsed_html = BeautifulSoup(f, 'html5lib')
     f.close()
 
-    converted_html = process_file_html(dialogue, css_file, output_dir, parsed_html, dialogue_descriptors, speakers)
+    converted_html = process_file_html(dialogues[dialogue], css_file, parsed_html, dialogue_descriptors, speakers)
     fout = open("output/" + dialogue + ".html", "w")
     fout.write(converted_html)
     fout.close()
