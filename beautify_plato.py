@@ -254,8 +254,8 @@ dialogues = {
     "charmides":"./sources/plato/plato-charmides-tr-jowett-guttenberg.html",            # 
     "cleitophon":"./sources/plato/plato-cleitophon-tr-lamb.html",                       # 
     "cratylus":"./sources/plato/plato-cratylus-tr-jowett-guttenberg.html",              # Minor: translator in par; descriptions not parsed; add footnotes
-    #"crito":"./sources/plato/plato-crito-tr-jowett-guttenberg.html",                    # MAJOR: No structure in HTML
-    "crito":"./sources/plato/modified/plato-crito-tr-jowett-guttenberg-modified.html",                    # MAJOR: No structure in HTML
+    #"crito":"./sources/plato/plato-crito-tr-jowett-guttenberg.html",                   # MAJOR: No structure in HTML
+    "crito":"./sources/plato/modified/plato-crito-tr-jowett-guttenberg-modified.html",  # 
     "critias":"./sources/plato/plato-critias-tr-jowett-guttenberg.html",                # 
     "euthydemus":"./sources/plato/plato-euthydemus-tr-jowett-guttenberg.html",          # 
     "euthyphro":"./sources/plato/plato-euthyphro-tr-jowett-guttenberg.html",            # 
@@ -265,7 +265,7 @@ dialogues = {
     "laches":"./sources/plato/plato-laches-tr-jowett-guttenberg.html",                  # Minor: PERSONS in TOC
     "laws": "./sources/plato/plato-laws-tr-jowett-guttenberg.html",                     # 
     #"lesser-hyppias":"./sources/plato/plato-lesser-hypias-tr-jowett-guttenberg.html",   # MAJOR: extra entries in TOC; entries in incorrected places in HTML
-    "lesser-hyppias":"./sources/plato/modified/plato-lesser-hypias-tr-jowett-guttenberg-modified.html",   # MAJOR: extra entries in TOC; entries in incorrected places in HTML
+    "lesser-hyppias":"./sources/plato/modified/plato-lesser-hypias-tr-jowett-guttenberg-modified.html",   # 
     "lysis":"./sources/plato/plato-lysis-tr-jowett-guttenberg.html",                    # Minor: PERSONS toc entry
     "menexenus":"./sources/plato/plato-menexenus-tr-jowett-guttenberg.html",            # Minor: PERSONS toc entry
     "meno":  "./sources/plato/plato-meno-tr-jowett-guttenberg.html",                    # 
