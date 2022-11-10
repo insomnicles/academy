@@ -126,7 +126,7 @@ def convert_section_paragraphs(section_html, speakers, dialogue_descriptors):
         if first in dialogue_descriptors:
             descriptor = first
             description = split[1:][0]
-            description = description.replace("\n", "").replace("\t","")
+            description = description.replace("\n", " ").replace("\t"," ")
             description = re.sub(" +", " ", description)
             description.strip()
             converted_html = converted_html + "<div class=\"description\">" + "<div class=\"descriptor\">" + descriptor + "</div>" + description + "</div>"
@@ -139,7 +139,7 @@ def convert_section_paragraphs(section_html, speakers, dialogue_descriptors):
             par_num_html = "<span class=\"ref\">" + str(par_num).zfill(3) + "</span>"
 
             speech = split[1:][0]
-            clean_speech_text = speech.replace("\n", "").replace("\t","")
+            clean_speech_text = speech.replace("\n", " ").replace("\t"," ")
             clean_speech_text = re.sub(" +", " ", clean_speech_text)
             clean_speech_text.strip()
 
@@ -153,7 +153,7 @@ def convert_section_paragraphs(section_html, speakers, dialogue_descriptors):
         else:
             par_num +=1
             par_num_html = "<span class=\"ref\">" + str(par_num).zfill(3) + "</span>"
-            par_text = ptag.text.replace("\n", "").replace("\t","")
+            par_text = ptag.text.replace("\n", " ").replace("\t"," ")
             par_text = re.sub(" +", " ", par_text)
             par_text.strip()
 
@@ -261,6 +261,7 @@ dialogues = {
     "euthyphro":"./sources/plato/plato-euthyphro-tr-jowett-guttenberg.html",            # 
     "eryxias":"./sources/plato/plato-eryxias-tr-jowett-guttenberg.html",                # 
     "gorgias":"./sources/plato/plato-gorgias-tr-jowett-guttenberg.html",                # 
+    #"gorgias":"./sources/plato/modified/plato-gorgias-tr-jowett-guttenberg-stenius.html",
     "ion":"./sources/plato/plato-ion-tr-jowett-guttenberg.html",                        # 
     "laches":"./sources/plato/plato-laches-tr-jowett-guttenberg.html",                  # Minor: PERSONS in TOC
     "laws": "./sources/plato/plato-laws-tr-jowett-guttenberg.html",                     # 
