@@ -229,7 +229,7 @@ def convert_book_headings_html(meta_data):
                         <h1 class="book_title" lang="en">{title}</h1>
                         <h2 class="book_author" lang="en"><a href="https://en.wikipedia.org/wiki/Plato">{author}</a></h2>
                         <h3 class="book_translator" lang="en">Tr. {translator}</h3>
-                        <p class="book_source_and_license" ><small>{source}&nbsp;and&nbsp;<a href="{copyright}">©License</a></p>
+                        <p class="book_source_and_license" ><small>{source}&nbsp;and&nbsp;<a href="{copyright}">©License</a></small></p>
                         """
     return headings_html
 
