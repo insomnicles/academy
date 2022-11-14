@@ -260,10 +260,11 @@ def process_file_html(source_url, css_file, parsed_html, dialogue_descriptors, s
                                                 {converted_section_html[section]}
                                             </div>"""
 
+#class="default"
     converted_html = f"""<html>
                             {header_html}
-                            <body class="default">
-                                <div class="container">
+                            <body >
+                                <div class="book_container">
                                     {book_headings_html}
                                     {toc_html}
                                     {sections_html}
