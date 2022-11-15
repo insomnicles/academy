@@ -74,7 +74,6 @@ def get_toc(parsed_html):
 #             descriptions[first] = description.strip()
 #     return descriptions
 
-
 def get_sections(parsed_html):
 
     current_section, sections = '', {}
@@ -95,7 +94,7 @@ def convert_header_html(css_file, source_url, meta_data):
         return ''
 
     title = meta_data['dc.title']
-    author = meta_data['dc.creator']
+    author = meta_data['dc.creator'].split(',')[0]
     guttenberg_meta_tags = ''
 
     css_file = os.path.basename(css_file)
@@ -150,7 +149,7 @@ def convert_section_paragraphs(section_html, speakers, dialogue_descriptors):
             for child in children:
                 if (child.name == 'span'):
                     print('STEPHANUS SPAN FOUND')
-                print("CHILD:" + child.text + "ZZZ")
+                #print("CHILD:" + child.text + "ZZZ")
 
         # Dialogue description
         if first in dialogue_descriptors:
@@ -166,7 +165,7 @@ def convert_section_paragraphs(section_html, speakers, dialogue_descriptors):
         # Dialogue paragraph w/ speaker
         elif first in speakers:
             speaker = first
-            speaker_html = "<h2 class=\"speaker\">" + speaker + "</h2>"
+            speaker_html = "<div class=\"speaker\">" + speaker + "</div>"
             par_num +=1
             par_num_html = "<span class=\"ref\">" + str(par_num).zfill(3) + "</span>"
 
@@ -195,13 +194,11 @@ def convert_section_paragraphs(section_html, speakers, dialogue_descriptors):
 
 def convert_toc_html(toc):
 
-    toc_html = ''
+    toc_html = "<div class=\"book_toc\">"
 
     for tocEntry in toc:
-        toc_html = toc_html + f"""  <h3 class="book_toc" lang="en">
-                                        <a href="#" onclick='return showDiv({tocEntry})' >{toc[tocEntry]}</a>
-                                    </h3>"""
-
+        toc_html = toc_html + f"""  <h3 class="book_toc_entry" lang="en"><a href="#" onclick='return showDiv({tocEntry})' >{toc[tocEntry]}</a></h3>"""
+    toc_html = toc_html + "</div>"
     return toc_html
 
 def convert_section_title_html(title, toc):
@@ -213,9 +210,8 @@ def convert_book_headings_html(meta_data):
     if not meta_data:
         return ''
 
-
     title = meta_data['dc.title']
-    author = meta_data['dc.creator']
+    author = meta_data['dc.creator'].split(',')[0]
     translator = meta_data['marcrel.trl'] if 'marcrel.trl' in meta_data.keys() else ''
 
     if (title == 'cleitophon'):
@@ -260,14 +256,23 @@ def process_file_html(source_url, css_file, parsed_html, dialogue_descriptors, s
                                                 {converted_section_html[section]}
                                             </div>"""
 
-#class="default"
     converted_html = f"""<html>
                             {header_html}
-                            <body >
-                                <div class="book_container">
-                                    {book_headings_html}
-                                    {toc_html}
-                                    {sections_html}
+                            <body>
+                                <div id="book_reader_container" >
+                                    <div id="book_reader_nav">
+                                        <a href="#" onclick="return formatSize()"><img class="nav_img filter-nav" src="./images/icons/format_size.svg" /></a>
+                                        <a href="#" onclick="return showToc()"><img class="nav_img filter-nav" src="./images/icons/toc.svg" /></a>
+                                        <!-- <a id="link_dark_mode" href="#" onclick="return darklightMode('dark')"><img class="nav_img filter-nav" src="./images/icons/dark_mode.svg" /></a>
+                                        <a id="link_light_mode" href="#" style="display:none" onclick="return darklightMode('light')"><img class="nav_img filter-nav" src="./images/icons/light_mode.svg" /></a> -->
+                                    </div>
+                                    <div class="book_reader">
+                                        <div class="book_container">
+                                            {book_headings_html}
+                                            {toc_html}
+                                            {sections_html}
+                                        </div>
+                                    </div>
                                 </div>
                             </body>
                         </html>"""
