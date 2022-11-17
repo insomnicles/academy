@@ -8,8 +8,6 @@ permalink: /plato/apology
 <a href="/">The Academy </a>
 <a href="#" onclick="return formatSize()"><img class="nav_img filter-nav" src="{{ site.url }}/images/icons/format_size.svg" /></a>
 <a href="#" onclick="return showToc()"><img class="nav_img filter-nav" src="{{ site.url }}/images/icons/toc.svg" /></a>
-<!-- <a id="link_dark_mode" href="#" onclick="return darklightMode('dark')"><img class="nav_img filter-nav" src="{{ site.url }}/images/icons/dark_mode.svg" /></a>
-<a id="link_light_mode" href="#" style="display:none" onclick="return darklightMode('light')"><img class="nav_img filter-nav" src="{{ site.url }}/images/icons/light_mode.svg" /></a> -->
 </div>
 <div class="book_reader">
 <div class="book_container">
