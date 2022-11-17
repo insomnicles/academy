@@ -1,6 +1,7 @@
 TODO.md
 /archive
 src/*
+src/books/*
 !src/books/plato
 !src/books/aristotle
 !src/academy.css
