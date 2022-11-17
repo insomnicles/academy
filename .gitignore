@@ -1,9 +1,10 @@
 TODO.md
-/archive
+archive
 src/*
+!src/academy.css
+!src/academy.js
+
 src/books/*
 !src/books/plato
 !src/books/aristotle
-!src/academy.css
-!src/academy.js
 !src/images/icons/*
