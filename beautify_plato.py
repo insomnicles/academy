@@ -239,6 +239,16 @@ def convert_book_headings_html(meta_data):
                         """
     return headings_html
 
+# def convert_footnote_html(footnotes):
+#     footnote_html = {}
+#     for footnote in footnotes:
+#         footnote_html[id] = "<div id=\"footnote_" + id + "\" class=\"footnote\"> <sup>" + id + "</sup>Blah blah more blah blah and then some more</div>"
+#     return footnote_html
+
+# def convert_sidenote_html(sidenotes):
+#    <span id=\"sidenote_" + id + "\" class="sidenote"> Blah blah more blah blah and then some more asd;lfkj a;slkdjf; lj;alsdkj f;laskdjf askldjghf sajkhdgf kjashg dkjfhg ksjdhg fkjashg dfkjagh sdkjfh gfs</span>
+#
+
 def process_file_html(source_url, css_file, parsed_html, dialogue_descriptors, speakers):
 
     meta_data = get_meta_tags(parsed_html)
@@ -276,6 +286,12 @@ def process_file_html(source_url, css_file, parsed_html, dialogue_descriptors, s
                                         <a href="#" onclick="return showToc()"><img class="nav_img filter-nav" src="./images/icons/toc.svg" /></a>
                                     </div>
                                     <div class="book_reader">
+                                        <div class="explanation_container">
+                                            <div class="explanation">
+                                                <div class="definiendum">Alcibiades</div>
+                                                <div class="definiens"><a href="https://en.wikipedia.org/wiki/Alcibiades">Wiki</a> a prominent Athenian statesman, orator, and general. He was the last of the Alcmaeonidae, which fell from prominence after the Peloponnesian War. He played a major role in the second half of that conflict as a strategic advisor, military commander, and politician. </div>
+                                            </div>
+                                        </div>
                                         <div class="book_container">
                                             {book_headings_html}
                                             {toc_html}
@@ -299,7 +315,7 @@ dialogues = {
     "apology":      source_plato + "/plato-apology-tr-jowett-guttenberg.html",                  #
     "charmides":    source_plato + "/plato-charmides-tr-jowett-guttenberg.html",                #
     "cratylus":     source_plato + "/plato-cratylus-tr-jowett-guttenberg.html",                 # Minor: translator in par; descriptions not parsed; add footnotes
-    "crito":        source_plato + "/plato-crito-tr-jowett-guttenberg-modified.html",           # **Using Modified Gutenberg Source: original missing toc markup
+    "crito":        source_plato + "/plato-crito-tr-jowett-guttenberg-modified.html",                    # ERROR: original missing toc markup
     "critias":      source_plato + "/plato-critias-tr-jowett-guttenberg.html",                  #
     "euthydemus":   source_plato + "/plato-euthydemus-tr-jowett-guttenberg.html",               #
     "euthyphro":    source_plato + "/plato-euthyphro-tr-jowett-guttenberg.html",                #
@@ -308,7 +324,7 @@ dialogues = {
     "ion":          source_plato + "/plato-ion-tr-jowett-guttenberg.html",                      #
     "laches":       source_plato + "/plato-laches-tr-jowett-guttenberg.html",                   # Minor: PERSONS in TOC
     "laws":         source_plato + "/plato-laws-tr-jowett-guttenberg.html",                     #
-    "lesser-hippias": source_plato + "/plato-lesser-hippias-tr-jowett-guttenberg-modified.html",# **Using Modified Gutenberg Source: original missing toc markup
+    "lesser-hippias": source_plato + "/plato-lesser-hippias-tr-jowett-guttenberg-modified.html",# ERROR: original missing toc markup
     "lysis":        source_plato + "/plato-lysis-tr-jowett-guttenberg.html",                    # Minor: PERSONS toc entry
     "menexenus":    source_plato + "/plato-menexenus-tr-jowett-guttenberg.html",                # Minor: PERSONS toc entry
     "meno":         source_plato + "/plato-meno-tr-jowett-guttenberg.html",                     #
@@ -394,10 +410,14 @@ for dialogue in dialogues:
     fout.write(converted_html)
     fout.close()
 
-shutil.copy(css_file, output_dir);
-shutil.copy(js_file, output_dir);
 current_dir = os.path.dirname(os.path.abspath(__file__))
 icon_dir = output_dir + "/images/icons"
-os.makedirs(current_dir + "/" + icon_dir, exist_ok=True)
+os.makedirs(output_dir + "/css", exist_ok=True)
+os.makedirs(output_dir + "/js", exist_ok=True)
+os.makedirs(output_dir + "/images", exist_ok=True)
+os.makedirs(output_dir + "/images/icons", exist_ok=True)
+
+shutil.copy(css_file, output_dir + "/css");
+shutil.copy(js_file, output_dir + "/js");
 shutil.copy("src/images/icons/toc.svg",         icon_dir);
 shutil.copy("src/images/icons/format_size.svg", icon_dir);

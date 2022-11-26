@@ -10,6 +10,12 @@ permalink: /plato/cratylus
 <a href="#" onclick="return showToc()"><img class="nav_img filter-nav" src="{{ site.url }}/images/icons/toc.svg" /></a>
 </div>
 <div class="book_reader">
+<div class="explanation_container">
+<div class="explanation">
+<div class="definiendum">Alcibiades</div>
+<div class="definiens"><a href="https://en.wikipedia.org/wiki/Alcibiades">Wiki</a> a prominent Athenian statesman, orator, and general. He was the last of the Alcmaeonidae, which fell from prominence after the Peloponnesian War. He played a major role in the second half of that conflict as a strategic advisor, military commander, and politician. </div>
+</div>
+</div>
 <div class="book_container">
 
 <h1 class="book_title" lang="en">Cratylus</h1>
