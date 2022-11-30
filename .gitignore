@@ -1,4 +1,6 @@
 TODO.md
+beautify_sophocles.py
+beautify_classics_archive.py
 archive
 src/*
 !src/css/*

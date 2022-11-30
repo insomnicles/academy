@@ -10,7 +10,7 @@ SOURCE_HTML_FILES=output
 SOURCE_CSS=output/css
 SOURCE_JS=output/js
 SOURCE_IMG=output/images/icons
-OUTPUT_DIR=jekyll-pages
+OUTPUT_DIR=output/jekyll-pages
 TARGET_JEKYLL_HOME=../insomnicles.github.io
 JEKYLL_LAYOUT="book"
 
