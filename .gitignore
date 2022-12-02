@@ -4,7 +4,6 @@ beautify_sophocles.py
 
 src/books/0-extra
 src/books/classics
-!src/books/classics
 !src/books/guttenberg
 !src/css
 !src/js
