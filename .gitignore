@@ -1,15 +1,14 @@
 TODO.md
 CODE.md
 beautify_sophocles.py
-src/*
-src/images/*
-
-!src/css/*
-!src/js/*
-!src/images/icons
 
 src/books/0-extra
 src/books/classics
+!src/books/classics
+!src/books/guttenberg
+!src/css
+!src/js
+!src/images/icons
 
 output/*
 !output/classics
