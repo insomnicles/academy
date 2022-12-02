@@ -1,4 +1,5 @@
 TODO.md
+CODE.md
 beautify_sophocles.py
 beautify_classics_archive.py
 archive
@@ -12,3 +13,8 @@ src/books/*
 
 src/images/*
 !src/images/icons
+
+output/*
+!output/classics
+!output/gutenberg
+!output/jekyll-pages
