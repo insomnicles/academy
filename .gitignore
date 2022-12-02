@@ -8,8 +8,7 @@ src/*
 !src/js/*
 
 src/books/*
-!src/books/plato
-!src/books/aristotle
+!src/books/guttenberg/*
 
 src/images/*
 !src/images/icons
