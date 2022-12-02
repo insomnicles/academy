@@ -1,9 +1,11 @@
 TODO.md
 CODE.md
 beautify_sophocles.py
+beautify_classics.py_bak
 
 src/books/0-extra
 src/books/classics
+src/books/earlymoderntexts
 !src/books/guttenberg
 !src/css
 !src/js
