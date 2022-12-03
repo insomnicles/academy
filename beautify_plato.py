@@ -312,43 +312,43 @@ source_aristotle="./src/books/guttenberg/aristotle"
 
 dialogues = {
     # Plato
-    "alcibiadesI":  source_plato + "/plato-alcibiadesI-tr-jowett-guttenberg-modified.html",     # **Using Modified Gutenberg Source: original missing toc markup
-    "alcibiadesII": source_plato + "/plato-alcibiadesII-tr-jowett-guttenberg.html",             # MINOR: no marcel.tr tag
-    "apology":      source_plato + "/plato-apology-tr-jowett-guttenberg.html",                  #
-    "charmides":    source_plato + "/plato-charmides-tr-jowett-guttenberg.html",                #
-    "cratylus":     source_plato + "/plato-cratylus-tr-jowett-guttenberg.html",                 # Minor: translator in par; descriptions not parsed; add footnotes
-    "crito":        source_plato + "/plato-crito-tr-jowett-guttenberg-modified.html",                    # ERROR: original missing toc markup
-    "critias":      source_plato + "/plato-critias-tr-jowett-guttenberg.html",                  #
-    "euthydemus":   source_plato + "/plato-euthydemus-tr-jowett-guttenberg.html",               #
-    "euthyphro":    source_plato + "/plato-euthyphro-tr-jowett-guttenberg.html",                #
-    "eryxias":      source_plato + "/plato-eryxias-tr-jowett-guttenberg.html",                  #
-    "gorgias":      source_plato + "/plato-gorgias-tr-jowett-guttenberg.html",                  #
-    "ion":          source_plato + "/plato-ion-tr-jowett-guttenberg.html",                      #
-    "laches":       source_plato + "/plato-laches-tr-jowett-guttenberg.html",                   # Minor: PERSONS in TOC
-    "laws":         source_plato + "/plato-laws-tr-jowett-guttenberg.html",                     #
-    "lesser-hippias": source_plato + "/plato-lesser-hippias-tr-jowett-guttenberg-modified.html",# ERROR: original missing toc markup
-    "lysis":        source_plato + "/plato-lysis-tr-jowett-guttenberg.html",                    # Minor: PERSONS toc entry
-    "menexenus":    source_plato + "/plato-menexenus-tr-jowett-guttenberg.html",                # Minor: PERSONS toc entry
-    "meno":         source_plato + "/plato-meno-tr-jowett-guttenberg.html",                     #
-    "parmenides":   source_plato + "/plato-parmenides-tr-jowett-guttenberg.html",               #
-    "phaedo":       source_plato + "/plato-phaedo-tr-jowett-guttenberg.html",                   # Minor: PERSONS OF THE DIALOGUE in dialogue para
-    "phaedrus":     source_plato + "/plato-phaedrus-tr-jowett-guttenberg.html",                 #
-    "philebus":     source_plato + "/plato-philebus-tr-jowett-guttenberg.html",                 #
-    "protagoras":   source_plato + "/plato-protagoras-tr-jowett-guttenberg.html",               #
-    "republic":     source_plato + "/plato-republic-tr-jowett-guttenberg.html",                 # Minor: PERSONS in toc
-    "sophist":      source_plato + "/plato-sophist-tr-jowett-guttenberg.html",                  #
-    "statesman":    source_plato + "/plato-statesman-tr-jowett.html",                           #
-    "symposium":    source_plato + "/plato-symposium-tr-jowett-guttenberg.html",                #
-    "timaeus":      source_plato + "/plato-timaeus-tr-jowett-guttenberg.html",                  #
-    "theaetetus":   source_plato + "/plato-theaetetus-tr-jowett-guttenberg.html",               #
+    # "alcibiadesI":  source_plato + "/plato-alcibiadesI-tr-jowett-guttenberg-modified.html",     # **Using Modified Gutenberg Source: original missing toc markup
+    # "alcibiadesII": source_plato + "/plato-alcibiadesII-tr-jowett-guttenberg.html",             # MINOR: no marcel.tr tag
+    # "apology":      source_plato + "/plato-apology-tr-jowett-guttenberg.html",                  #
+    # "charmides":    source_plato + "/plato-charmides-tr-jowett-guttenberg.html",                #
+    # "cratylus":     source_plato + "/plato-cratylus-tr-jowett-guttenberg.html",                 # Minor: translator in par; descriptions not parsed; add footnotes
+    # "crito":        source_plato + "/plato-crito-tr-jowett-guttenberg-modified.html",                    # ERROR: original missing toc markup
+    # "critias":      source_plato + "/plato-critias-tr-jowett-guttenberg.html",                  #
+    # "euthydemus":   source_plato + "/plato-euthydemus-tr-jowett-guttenberg.html",               #
+    # "euthyphro":    source_plato + "/plato-euthyphro-tr-jowett-guttenberg.html",                #
+    # "eryxias":      source_plato + "/plato-eryxias-tr-jowett-guttenberg.html",                  #
+    # "gorgias":      source_plato + "/plato-gorgias-tr-jowett-guttenberg.html",                  #
+    # "ion":          source_plato + "/plato-ion-tr-jowett-guttenberg.html",                      #
+    # "laches":       source_plato + "/plato-laches-tr-jowett-guttenberg.html",                   # Minor: PERSONS in TOC
+    # "laws":         source_plato + "/plato-laws-tr-jowett-guttenberg.html",                     #
+    # "lesser-hippias": source_plato + "/plato-lesser-hippias-tr-jowett-guttenberg-modified.html",# ERROR: original missing toc markup
+    # "lysis":        source_plato + "/plato-lysis-tr-jowett-guttenberg.html",                    # Minor: PERSONS toc entry
+    # "menexenus":    source_plato + "/plato-menexenus-tr-jowett-guttenberg.html",                # Minor: PERSONS toc entry
+    # "meno":         source_plato + "/plato-meno-tr-jowett-guttenberg.html",                     #
+    # "parmenides":   source_plato + "/plato-parmenides-tr-jowett-guttenberg.html",               #
+    # "phaedo":       source_plato + "/plato-phaedo-tr-jowett-guttenberg.html",                   # Minor: PERSONS OF THE DIALOGUE in dialogue para
+    # "phaedrus":     source_plato + "/plato-phaedrus-tr-jowett-guttenberg.html",                 #
+    # "philebus":     source_plato + "/plato-philebus-tr-jowett-guttenberg.html",                 #
+    # "protagoras":   source_plato + "/plato-protagoras-tr-jowett-guttenberg.html",               #
+    # "republic":     source_plato + "/plato-republic-tr-jowett-guttenberg.html",                 # Minor: PERSONS in toc
+    # "sophist":      source_plato + "/plato-sophist-tr-jowett-guttenberg.html",                  #
+    # "statesman":    source_plato + "/plato-statesman-tr-jowett.html",                           #
+    # "symposium":    source_plato + "/plato-symposium-tr-jowett-guttenberg.html",                #
+    # "timaeus":      source_plato + "/plato-timaeus-tr-jowett-guttenberg.html",                  #
+    # "theaetetus":   source_plato + "/plato-theaetetus-tr-jowett-guttenberg.html",               #
 
     # Aristotle
-    # "athenian-constitution":source_aristotle + "/aristotle-the-athenian-constitution-tr-kenyon-guttenberg.html",       #
-    # "categories":           source_aristotle + "/aristotle-the-categories-tr-edghill-guttenberg.html",                 #
-    # "nico-ethics":          source_aristotle + "/aristotle-the-nicomachean-ethics-tr-smith-ja-guttenberg.html",        #
-    # "poetics-bywater":      source_aristotle + "/aristotle-on-the-art-of-poetry-tr-bywater-guttenberg.html",           #
-    # "poetics-butcher":      source_aristotle + "/aristotle-the-poetics-tr-butcher-guttenberg.html",                    #
-    # "treatise-on-government":source_aristotle + "/aristotle-treatise-on-government-tr-ellis-guttenberg.html",          #
+    "athenian-constitution":source_aristotle + "/aristotle-the-athenian-constitution-tr-kenyon-guttenberg.html",       #
+    "categories":           source_aristotle + "/aristotle-the-categories-tr-edghill-guttenberg.html",                 #
+    "nico-ethics":          source_aristotle + "/aristotle-the-nicomachean-ethics-tr-smith-ja-guttenberg.html",        #
+    "poetics-bywater":      source_aristotle + "/aristotle-on-the-art-of-poetry-tr-bywater-guttenberg.html",           #
+    "poetics-butcher":      source_aristotle + "/aristotle-the-poetics-tr-butcher-guttenberg.html",                    #
+    "treatise-on-government":source_aristotle + "/aristotle-treatise-on-government-tr-ellis-guttenberg.html",          #
 }
 
 dialogue_descriptors = [ 'PERSONS OF THE DIALOGUE', 'SCENE', 'PLACE OF THE NARRATION' ];
