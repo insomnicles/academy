@@ -10,8 +10,3 @@ src/books/earlymoderntexts
 !src/css
 !src/js
 !src/images/icons
-
-output/*
-!output/classics
-!output/gutenberg
-!output/jekyll-pages
