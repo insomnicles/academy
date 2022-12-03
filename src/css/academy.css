@@ -109,7 +109,7 @@
   margin: auto;
   display: flex;
   justify-content:center;
-  max-width: 1000px;
+  max-width: 1100px;
   padding-top: 50px;
 }
 /*
@@ -120,7 +120,7 @@
 
 .explanation_container {
   position:relative;
-  width: 150px;
+  width: 200px;
   display: none;
 }
 
@@ -129,7 +129,7 @@
   top: 0px;
   left: 5%;
   max-height: 300px;
-  width: 150px;
+  width: 200px;
   z-index: 99;
   position: -webkit-sticky;
   position: sticky;
@@ -148,6 +148,12 @@
 .definiens {
   font-weight: normal;
 }
+
+.explanation_selected {
+  color: var(--link-color);
+  background-color: var(--explanation-bg);
+}
+
 /*
 
 Book Container
@@ -329,7 +335,7 @@ li {
   left: 100%;
   margin-left: 1.5em;
   color: var(--stephanus-text-color);
-  font-size: 14pt;
+  font-size: 12pt;
   font-weight: normal;
 }
 
@@ -338,7 +344,7 @@ li {
   left: 100%;
   margin-left: 1.5em;
   color: var(--stephanus-text-color);
-  font-size: 14pt;
+  font-size: 12pt;
   font-weight: bold;
 }
 
@@ -347,7 +353,12 @@ li {
   right: 100%;
   margin-left: 1.5em;
   color: var(--stephanus-text-color);
-  font-size: 14pt;
+  font-size: 12pt;
+  font-weight: bold;
+}
+
+.text_page_inline {
+  color: var(--stephanus-text-color);
   font-weight: bold;
 }
 
