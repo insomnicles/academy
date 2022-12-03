@@ -107,8 +107,8 @@ def convert_header_html(css_file, source_url, meta_data):
     author = meta_data['dc.creator'].split(',')[0]
     guttenberg_meta_tags = ''
 
-    css_file = os.path.basename(css_file)
-    javascript_file = "academy.js"
+    css_file = "css/" + os.path.basename(css_file)
+    javascript_file = "js/academy.js"
 
     for meta_tag_key in meta_data:
         if meta_tag_key == 'subjects':
@@ -207,7 +207,9 @@ def convert_toc_html(toc):
     toc_html = "<div class=\"book_toc\">"
 
     for tocEntry in toc:
-        toc_html = toc_html + f"""  <h3 class="book_toc_entry" lang="en"><a href="#" onclick='return showDiv({tocEntry})' >{toc[tocEntry]}</a></h3>"""
+        toc_html = toc_html + f"""  <h3 class="book_toc_entry" lang="en">
+                                        <a href="#" onclick="return showDiv('{tocEntry}')">{toc[tocEntry]}</a>
+                                    </h3>"""
     toc_html = toc_html + "</div>"
     return toc_html
 
@@ -305,8 +307,8 @@ def process_file_html(source_url, css_file, parsed_html, dialogue_descriptors, s
 
 
 # TOC marker, Entry Marker; Description Marker;
-source_plato= "./src/books/plato"
-source_aristotle="./src/books/aristotle"
+source_plato= "./src/books/guttenberg/plato"
+source_aristotle="./src/books/guttenberg/aristotle"
 
 dialogues = {
     # Plato
@@ -341,12 +343,12 @@ dialogues = {
     "theaetetus":   source_plato + "/plato-theaetetus-tr-jowett-guttenberg.html",               #
 
     # Aristotle
-    "athenian-constitution":source_aristotle + "/aristotle-the-athenian-constitution-tr-kenyon-guttenberg.html",       #
-    "categories":           source_aristotle + "/aristotle-the-categories-tr-edghill-guttenberg.html",                 #
-    "nico-ethics":          source_aristotle + "/aristotle-the-nicomachean-ethics-tr-smith-ja-guttenberg.html",        #
-    "poetics-bywater":      source_aristotle + "/aristotle-on-the-art-of-poetry-tr-bywater-guttenberg.html",           #
-    "poetics-butcher":      source_aristotle + "/aristotle-the-poetics-tr-butcher-guttenberg.html",                    #
-    "treatise-on-government":source_aristotle + "/aristotle-treatise-on-government-tr-ellis-guttenberg.html",          #
+    # "athenian-constitution":source_aristotle + "/aristotle-the-athenian-constitution-tr-kenyon-guttenberg.html",       #
+    # "categories":           source_aristotle + "/aristotle-the-categories-tr-edghill-guttenberg.html",                 #
+    # "nico-ethics":          source_aristotle + "/aristotle-the-nicomachean-ethics-tr-smith-ja-guttenberg.html",        #
+    # "poetics-bywater":      source_aristotle + "/aristotle-on-the-art-of-poetry-tr-bywater-guttenberg.html",           #
+    # "poetics-butcher":      source_aristotle + "/aristotle-the-poetics-tr-butcher-guttenberg.html",                    #
+    # "treatise-on-government":source_aristotle + "/aristotle-treatise-on-government-tr-ellis-guttenberg.html",          #
 }
 
 dialogue_descriptors = [ 'PERSONS OF THE DIALOGUE', 'SCENE', 'PLACE OF THE NARRATION' ];
@@ -378,8 +380,8 @@ if (num_args == 5):
 
 if (num_args == 1):
     dialogues = dialogues
-    css_file = "src/academy.css"
-    js_file = "src/academy.js"
+    css_file = "src/css/academy.css"
+    js_file = "src/js/academy.js"
     output_dir = "output"
 
 # Check if css file exists and is readable

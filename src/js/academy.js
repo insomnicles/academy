@@ -1,9 +1,9 @@
 function showDiv(div) {
+    var section_divs = document.getElementsByClassName('book_section');
 
-    var section_divs = document.getElementsByClassName('book_section')
-    
     for (let i = 0; i < section_divs.length; i++)
         section_divs[i].style.display = "none";
+
     section_divs[div].style.display = "block";
 
     return true;
@@ -39,7 +39,6 @@ function darklightMode(mode) {
 }
 
 function formatSize() {
-    //var book_section = document.getElementsByClassName('book_section');
     const element = document.querySelector('.book_section')
     const style = getComputedStyle(element)
     fontSize = style.fontSize;
@@ -72,6 +71,5 @@ function formatSize() {
     var speakers = document.getElementsByClassName('speaker');
     for (let i = 0; i < speakers.length; i++) {
         speakers[i].style.fontSize = newFontSize;
-        // books_sections[i].style.backgroundColor = 'red';
     }
 }
