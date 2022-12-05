@@ -1,3 +1,4 @@
+
 function showDiv(div) {
     var section_divs = document.getElementsByClassName('book_section');
 

@@ -13,7 +13,8 @@
   --link-color-hover: var(--primary);
   --text-color: black;
 
-  --explanation-bg: var(--background-light);
+  --explanation-bg-color: var(--background-light);
+  --explanation-color: var(--text-color);
 
   --reader-nav-bg: var(--background-light);
   --reader-nav-hover: var(--highlight);
@@ -26,7 +27,7 @@
   --sentence-ref: var(--primary-light);
   --paragraph-ref: var(--primary-light);
   --verse-ref: var(--primary-light);
-  --stephanus-text-color: var(--text-color);
+  --annotation-text-color: var(--secondary-dark);
 }
 
 #book_reader_container {
@@ -47,7 +48,6 @@
   color: var(--link-color-hover);
   text-decoration: underline;
 }
-
 
 /* Book Reader Navigation Bar */
 #book_reader_nav {
@@ -134,7 +134,8 @@
   position: -webkit-sticky;
   position: sticky;
   top: 100px;
-  background-color: var(--explanation-bg);
+  background-color: var(--explanation-bg-color);
+  color: var(--explanation-color);
   padding: 5px;
   font-size: 14px;
   overflow-wrap: anywhere;
@@ -256,7 +257,6 @@ li {
   margin: 1em 0;
   line-height: 1.8em;
   font-size: 1.3em;
-  color: var(--text-color);
 }
 .chapter > .ref {
   font-size: 1.2em;
@@ -267,7 +267,6 @@ li {
 
 .verse {
   display: inline;
-  color: var(--text-color);
 }
 
 .verse > .ref {
@@ -284,7 +283,6 @@ li {
   margin: 1.25em 0;
   line-height: 1.8em;
   font-size: 16px;
-  color: var(--text-color);
 }
 
 .speech > .ref {
@@ -300,12 +298,10 @@ li {
   font-weight: bold;
   font-size: 15px;
   margin: 0;
-  color: var(--text-color);
 }
 
 .sentence {
   display: inline;
-  color: var(--text-color);
 }
 
 .sentence > .ref {
@@ -320,7 +316,6 @@ li {
 
 .paragraph {
   margin: 1.8em 0;
-  color: var(--text-color);
 }
 .paragraph > .ref {
   position: absolute;
@@ -334,7 +329,7 @@ li {
   position: absolute;
   left: 100%;
   margin-left: 1.5em;
-  color: var(--stephanus-text-color);
+  color: var(--annotation-text-color);
   font-size: 12pt;
   font-weight: normal;
 }
@@ -343,7 +338,7 @@ li {
   position: absolute;
   left: 100%;
   margin-left: 1.5em;
-  color: var(--stephanus-text-color);
+  color: var(--annotation-text-color);
   font-size: 12pt;
   font-weight: bold;
 }
@@ -352,13 +347,12 @@ li {
   position: absolute;
   right: 100%;
   margin-left: 1.5em;
-  color: var(--stephanus-text-color);
+  color: var(--annotation-text-color);
   font-size: 12pt;
   font-weight: bold;
 }
 
 .text_page_inline {
-  color: var(--stephanus-text-color);
   font-weight: bold;
 }
 
@@ -370,13 +364,11 @@ li {
   font-size: 11px;
   min-width: 150px;
   line-height: 1.25em;
-  color: var(--text-color);
 }
 
 .footnote {
   margin-left: 25px;
   font-size: 11px;
-  color: var(--text-color);
 }
 
 q::before {
