@@ -108,8 +108,8 @@ plato_urls = {
 bc = Html2PrettyHtml()
 
 # URLs
-# for url in plato_urls:
-#     bc.convert("gutenberg", plato_urls[url], "easy", "output/gutenberg/urls")
+for url in plato_urls:
+    bc.convert("gutenberg", plato_urls[url], "easy", "output/gutenberg/urls")
 
 #FILE
 #bc.convert("gutenberg", "src/books/gutenberg/plato/plato-republic-2-tr-jowett-guttenberg.html", "easy", "output/gutenberg/plato")
@@ -120,8 +120,8 @@ src_directory = "src/books/gutenberg/plato/"
 # src_directory = "src/books/gutenberg/aristotle/"
 # src_directory = "src/books/gutenberg/sophocles"
 
-for path, subdirs, files in os.walk(src_directory):
-    for name in files:
-        if name.endswith(".html"):
-            bc.convert("gutenberg", os.path.join(path, name), "easy", "output/gutenberg/plato")
-            time.sleep(1)
+# for path, subdirs, files in os.walk(src_directory):
+#     for name in files:
+#         if name.endswith(".html"):
+#             bc.convert("gutenberg", os.path.join(path, name), "easy", "output/gutenberg/plato")
+#             time.sleep(1)
