@@ -1,213 +1,127 @@
-from src.converters.beautify import Beautifier
-from src.converters.extractors import Extractor
-from src.converters.extractors import GuttenbergDialogueExtractor
-from src.converters.extractors import GuttenbergPoemExtractor
+from prettifier import EasyPrettifier
+from extractors import GutenbergExtractor
 
-import os
-import sys
 from urllib.error import URLError
 from urllib.error import HTTPError
 from urllib.request import urlopen
 from urllib.parse import urlparse
-from urlextract import URLExtract
-from pprint import pprint
-
+import time
+import os
 class Html2PrettyHtml:
-    src_file, src_filename, src_dir, src_url, output_dir = "", "", "", "", ""
+    DEBUG = False
 
-    src_file = ""
-    src_dir = ""
-    src_filename = ""
-    src_url = ""
-    src_html = ""
-    output_dir = ""
-
+    source, source_work, theme, output_dir = "", "", "", ""
     structured_doc = None
 
-    def convert(self, source, source_type, source_work, theme, output_dir):
+    def convert(self, source, source_work, theme, output_dir):
         print("\n------------------\nProcessing " + source_work)
+        self.source = source
+        self.source_work = source_work
+        self.theme = theme
+        self.output_dir = output_dir if output_dir[-1] == "/" else output_dir + "/"
 
         try:
-            self.set_source_info(source_work)
-            self.get_source_html()
-            print("Source set successfully")
+            if (source == "gutenberg"):
+                ext = GutenbergExtractor(source_work, self.output_dir)
+            else:
+                raise Exception("Could not find a suitable extractor")
+            self.structured_doc = ext.extract()
+            del ext
+            print("Extracted File Successfully\n") if self.DEBUG else True
         except HTTPError as http_error:
-            print("Error: could not convert url: HTTPError")
+            print("Error: could not convert url: " + source_work + " HTTPError")
+            self.reset()
             return
         except URLError as url_error:
-            print("Error: could not convert url: URL Error: Server Not Found")
+            print("Error: could not convert url:" + source_work + " URL Error: Server Not Found")
+            self.reset()
             return
         except OSError as e:
-            print("Error: could not convert file/url: file/url not found or not readable\n")
+            print("Error: could not convert file/url: " + source_work + ": file/url not found or not readable\n")
+            self.reset()
             return
-        except Exception:
-            print("Error: could not Convert File" + str(e.code) + "\n")
-            return
-
-        try:
-            #ext = Extractor(source, source_type)
-            if (source == "guttenberg" and source_type == "dialogue"):
-                ext = GuttenbergDialogueExtractor()
-            elif (source == "guttenberg" and source_type == "poem"):
-                ext = GuttenbergPoemExtractor()
-            else:
-                raise Exception("could not find a suitable extractor")
-
-            ext.set_html(self.src_html)
-            self.structured_doc = ext.extract()
-            print(self.structured_doc)
-            print("Extracted File Successfully\n")
         except Exception as e:
             print("Error: could not extract data from source file/url\n")
-            # pprint(vars(bc))
+            print(e)
+            self.reset()
             return
 
-        print(self.structured_doc)
-        #pprint(vars(bc))
-        #print(structured_doc)
         try:
-            if (theme == "velvet"):
-                crt = Beautifier(source_type)
-            elif (theme == "sunny"):
-                crt = Beautifier(source_type)
+            if (theme == "easy"):
+                crt = EasyPrettifier()
             else:
                 raise Exception("Theme " + theme + " was not recognized.")
 
             crt.create(self.structured_doc)
-            print(output_dir + self.src_filename)
-            crt.save(output_dir + "/" + self.src_filename)
-        except Exception:
+            filename = self.structured_doc['metadata']['dc.title'] + ".html" if self.structured_doc['metadata']['dc.title'] != "" else self.structured_doc['src']['filename']
+            crt.save(output_dir, filename)
+            del crt
+            print("Converted File Successfully: " + filename)
+        except Exception as e:
             print("Error: could not beautify document data")
-            print(sys.exc_info())
+            print(e)
+            self.reset()
             return
 
         self.reset()
 
-    def set_source_info(self, source_work):
-
-        urls = URLExtract().find_urls(source_work)
-        if urls:
-            self.src_url = urls[0]
-            self.src_filename = urls[0].split("/")[-1]
-        else:
-            self.src_file = source_work.strip()
-            self.src_dir = os.path.dirname(source_work) + "/"
-            self.src_filename = os.path.basename(source_work)
-
-    def get_source_html(self):
-        html = ""
-        if self.src_url != "":
-            f = urlopen(self.src_url)
-        else:
-            f = open(self.src_file, "rb")
-        if not f:
-            raise Exception("Html not found")
-        html = f.read()
-        f.close()
-        self.src_html = html
-
     def reset(self):
-        self.src_file, self.src_filename, self.src_dir, self.src_url, self.output_dir = "", "", "", "", ""
-        self.src_html = ""
+        self.source, self.source_work, self.theme, self.output_dir = "", "", "", ""
         self.structured_doc = None
 
-source_plato= "./src/books/guttenberg/plato"
-source_aristotle="./src/books/guttenberg/aristotle"
-source_sophocles="./src/books/guttenberg/sophocles"
-
-plato_files = {
-    # Plato
-    # "alcibiadesI":  source_plato + "/plato-alcibiadesI-tr-jowett-guttenberg-modified.html",     # **Using Modified Gutenberg Source: original missing toc markup
-    # "alcibiadesII": source_plato + "/plato-alcibiadesII-tr-jowett-guttenberg.html",             # MINOR: no marcel.tr tag
-    # "apology":      source_plato + "/plato-apology-tr-jowett-guttenberg.html",                  #
-    # "charmides":    source_plato + "/plato-charmides-tr-jowett-guttenberg.html",                #
-    # "cratylus":     source_plato + "/plato-cratylus-tr-jowett-guttenberg.html",                 # Minor: translator in par; descriptions not parsed; add footnotes
-    # "crito":        source_plato + "/plato-crito-tr-jowett-guttenberg-modified.html",                    # ERROR: original missing toc markup
-    # "critias":      source_plato + "/plato-critias-tr-jowett-guttenberg.html",                  #
-    # "euthydemus":   source_plato + "/plato-euthydemus-tr-jowett-guttenberg.html",               #
-    # "euthyphro":    source_plato + "/plato-euthyphro-tr-jowett-guttenberg.html",                #
-    # "eryxias":      source_plato + "/plato-eryxias-tr-jowett-guttenberg.html",                  #
-    # "gorgias":      source_plato + "/plato-gorgias-tr-jowett-guttenberg.html",                  #
-    # "ion":          source_plato + "/plato-ion-tr-jowett-guttenberg.html",                      #
-    # "laches":       source_plato + "/plato-laches-tr-jowett-guttenberg.html",                   # Minor: PERSONS in TOC
-    # "laws":         source_plato + "/plato-laws-tr-jowett-guttenberg.html",                     #
-    # "lesser-hippias": source_plato + "/plato-lesser-hippias-tr-jowett-guttenberg-modified.html",# ERROR: original missing toc markup
-    # "lysis":        source_plato + "/plato-lysis-tr-jowett-guttenberg.html",                    # Minor: PERSONS toc entry
-    # "menexenus":    source_plato + "/plato-menexenus-tr-jowett-guttenberg.html",                # Minor: PERSONS toc entry
-    "meno":           source_plato + "/plato-meno-tr-jowett-guttenberg.html",                     #
-    "notplato":       source_plato + "/notplato.html",                     #
-    # "parmenides":   source_plato + "/plato-parmenides-tr-jowett-guttenberg.html",               #
-    # "phaedo":       source_plato + "/plato-phaedo-tr-jowett-guttenberg.html",                   # Minor: PERSONS OF THE DIALOGUE in dialogue para
-    # "phaedrus":     source_plato + "/plato-phaedrus-tr-jowett-guttenberg.html",                 #
-    # "philebus":     source_plato + "/plato-philebus-tr-jowett-guttenberg.html",                 #
-    # "protagoras":   source_plato + "/plato-protagoras-tr-jowett-guttenberg.html",               #
-    # "republic":     source_plato + "/plato-republic-tr-jowett-guttenberg.html",                 # Minor: PERSONS in toc
-    # "sophist":      source_plato + "/plato-sophist-tr-jowett-guttenberg.html",                  #
-    # "statesman":    source_plato + "/plato-statesman-tr-jowett.html",                           #
-    # "symposium":    source_plato + "/plato-symposium-tr-jowett-guttenberg.html",                #
-    # "timaeus":      source_plato + "/plato-timaeus-tr-jowett-guttenberg.html",                  #
-    # "theaetetus":   source_plato + "/plato-theaetetus-tr-jowett-guttenberg.html",               #
-}
-
 plato_urls = {
-    # Plato
-    # "alcibiadesI":  source_plato + "/plato-alcibiadesI-tr-jowett-guttenberg-modified.html",     # **Using Modified Gutenberg Source: original missing toc markup
-    # "alcibiadesII": source_plato + "/plato-alcibiadesII-tr-jowett-guttenberg.html",             # MINOR: no marcel.tr tag
-    # "apology":      source_plato + "/plato-apology-tr-jowett-guttenberg.html",                  #
-    # "charmides":    source_plato + "/plato-charmides-tr-jowett-guttenberg.html",                #
-    # "cratylus":     source_plato + "/plato-cratylus-tr-jowett-guttenberg.html",                 # Minor: translator in par; descriptions not parsed; add footnotes
-    # "crito":        source_plato + "/plato-crito-tr-jowett-guttenberg-modified.html",                    # ERROR: original missing toc markup
-    # "critias":      source_plato + "/plato-critias-tr-jowett-guttenberg.html",                  #
-    # "euthydemus":   source_plato + "/plato-euthydemus-tr-jowett-guttenberg.html",               #
-    # "euthyphro":    source_plato + "/plato-euthyphro-tr-jowett-guttenberg.html",                #
-    # "eryxias":      source_plato + "/plato-eryxias-tr-jowett-guttenberg.html",                  #
-    # "gorgias":      source_plato + "/plato-gorgias-tr-jowett-guttenberg.html",                  #
-    "ion":          "https://www.gutenberg.org/cache/epub/1635/pg1635-images.html",                      #
-    # "laches":       source_plato + "/plato-laches-tr-jowett-guttenberg.html",                   # Minor: PERSONS in TOC
-    # "laws":         source_plato + "/plato-laws-tr-jowett-guttenberg.html",                     #
-    # "lesser-hippias": source_plato + "/plato-lesser-hippias-tr-jowett-guttenberg-modified.html",# ERROR: original missing toc markup
-    # "lysis":        source_plato + "/plato-lysis-tr-jowett-guttenberg.html",                    # Minor: PERSONS toc entry
-    # "menexenus":    source_plato + "/plato-menexenus-tr-jowett-guttenberg.html",                # Minor: PERSONS toc entry
-    #"meno":         "https://www.gutenberg.org/cache/epub/1643/pg1643-images.html",                     #
-    "notplato":         "https://www.asdflasdfasdf.com/1.html",                     #
-    # "parmenides":   source_plato + "/plato-parmenides-tr-jowett-guttenberg.html",               #
-    # "phaedo":       source_plato + "/plato-phaedo-tr-jowett-guttenberg.html",                   # Minor: PERSONS OF THE DIALOGUE in dialogue para
-    # "phaedrus":     source_plato + "/plato-phaedrus-tr-jowett-guttenberg.html",                 #
-    # "philebus":     source_plato + "/plato-philebus-tr-jowett-guttenberg.html",                 #
-    # "protagoras":   source_plato + "/plato-protagoras-tr-jowett-guttenberg.html",               #
-    # "republic":     source_plato + "/plato-republic-tr-jowett-guttenberg.html",                 # Minor: PERSONS in toc
-    # "sophist":      source_plato + "/plato-sophist-tr-jowett-guttenberg.html",                  #
-    # "statesman":    source_plato + "/plato-statesman-tr-jowett.html",                           #
-    # "symposium":    source_plato + "/plato-symposium-tr-jowett-guttenberg.html",                #
-    # "timaeus":      source_plato + "/plato-timaeus-tr-jowett-guttenberg.html",                  #
-    # "theaetetus":   source_plato + "/plato-theaetetus-tr-jowett-guttenberg.html",               #
+    #"alcibiadesI":  "https://www.gutenberg.org/cache/epub/1676/pg1676-images.html",     # ERROR: original missing toc markup
+    "alcibiadesI":  "https://www.gutenberg.org/files/1676/1676-h/1676-h.htm",
+    "alcibiadesII": "https://www.gutenberg.org/cache/epub/1677/pg1677-images.html",     # MINOR: no marcel.tr tag
+    "apology":      "https://www.gutenberg.org/cache/epub/1656/pg1656-images.html",
+    "charmides":    "https://www.gutenberg.org/cache/epub/1580/pg1580-images.html",
+    "cratylus":     "https://www.gutenberg.org/cache/epub/1616/pg1616-images.html",     # Minor: translator in par; descriptions not parsed; add footnotes
+    #"crito":        "https://www.gutenberg.org/cache/epub/1657/pg1657-images.html",     # ERROR: original missing toc markup
+    "critias":      "https://www.gutenberg.org/cache/epub/1571/pg1571-images.html",
+    "euthydemus":   "https://www.gutenberg.org/cache/epub/1598/pg1598-images.html",
+    "euthyphro":    "https://www.gutenberg.org/cache/epub/1642/pg1642-images.html",
+    "eryxias":      "https://www.gutenberg.org/cache/epub/1681/pg1681-images.html",
+    "gorgias":      "https://www.gutenberg.org/cache/epub/1672/pg1672-images.html",
+    "ion":          "https://www.gutenberg.org/cache/epub/1635/pg1635-images.html",
+    "laches":       "https://www.gutenberg.org/cache/epub/1584/pg1584-images.html",     # Minor: PERSONS in TOC
+    "laws":         "https://www.gutenberg.org/cache/epub/1750/pg1750-images.html",
+    "lesser-hippias": "https://www.gutenberg.org/cache/epub/1673/pg1673-images.html",   # ERROR: original missing toc markup
+    "lysis":        "https://www.gutenberg.org/cache/epub/1579/pg1579-images.html",     # Minor: PERSONS toc entry
+    "menexenus":    "https://www.gutenberg.org/cache/epub/1682/pg1682-images.html",     # Minor: PERSONS toc entry
+    "meno":         "https://www.gutenberg.org/cache/epub/1643/pg1643-images.html",
+    "parmenides":   "https://www.gutenberg.org/cache/epub/1687/pg1687-images.html",
+    "phaedo":       "https://www.gutenberg.org/cache/epub/1658/pg1658-images.html",     # Minor: PERSONS OF THE DIALOGUE in dialogue para
+    "phaedrus":     "https://www.gutenberg.org/cache/epub/1636/pg1636-images.html",
+    "philebus":     "https://www.gutenberg.org/cache/epub/1744/pg1744-images.html",
+    "protagoras":   "https://www.gutenberg.org/cache/epub/1591/pg1591-images.html",
+    # "republic2":     "https://www.gutenberg.org/cache/epub/55201/pg55201-images.html",
+    "republic":     "https://www.gutenberg.org/cache/epub/1497/pg1497-images.html",
+    "sophist":      "https://www.gutenberg.org/cache/epub/1735/pg1735-images.html",
+    "statesman":    "https://www.gutenberg.org/cache/epub/1738/pg1738-images.html",
+    "symposium":    "https://www.gutenberg.org/cache/epub/1600/pg1600-images.html",
+    "timaeus":      "https://www.gutenberg.org/cache/epub/1572/pg1572-images.html",
+    "theaetetus":   "https://www.gutenberg.org/cache/epub/1726/pg1726-images.html",
+    "notplato":     "https://www.asdflasdfasdf.com/1.html",
 }
 
-
-aristotle = {
-    # Aristotle
-    "athenian-constitution":source_aristotle + "/aristotle-the-athenian-constitution-tr-kenyon-guttenberg.html",       #
-    "categories":           source_aristotle + "/aristotle-the-categories-tr-edghill-guttenberg.html",                 #
-    "nico-ethics":          source_aristotle + "/aristotle-the-nicomachean-ethics-tr-smith-ja-guttenberg.html",        #
-    "poetics-bywater":      source_aristotle + "/aristotle-on-the-art-of-poetry-tr-bywater-guttenberg.html",           #
-    "poetics-butcher":      source_aristotle + "/aristotle-the-poetics-tr-butcher-guttenberg.html",                    #
-    "treatise-on-government":source_aristotle + "/aristotle-treatise-on-government-tr-ellis-guttenberg.html",          #
-}
-
-sophocles = {
-    "sophocles": source_sophocles + "/sophocles-seven-plays.html"
-}
 
 bc = Html2PrettyHtml()
-for dialogue in plato_files:
-    bc.convert("guttenberg", "dialogue", plato_files[dialogue], "velvet" "output/guttenberg/plato")
-    #pprint(vars(bc))
-for url in plato_urls:
-    bc.convert("guttenberg", "dialogue", plato_urls[url], "summer", "output/guttenberg/plato")
-    #pprint(vars(bc))
 
-# for book in aristotle:
-#    bc.convert("guttenberg", "book", book, "output/guttenberg/aristotle")
+# URLs
+# for url in plato_urls:
+#     bc.convert("gutenberg", plato_urls[url], "easy", "output/gutenberg/urls")
 
-# for poem in sophocles:
-#    bc.convert("guttenberg", "poem", poem, "output/guttenberg/sophocles")
+#FILE
+#bc.convert("gutenberg", "src/books/gutenberg/plato/plato-republic-2-tr-jowett-guttenberg.html", "easy", "output/gutenberg/plato")
+
+# FILES
+#src_directory = "src/books/gutenberg/"
+src_directory = "src/books/gutenberg/plato/"
+# src_directory = "src/books/gutenberg/aristotle/"
+# src_directory = "src/books/gutenberg/sophocles"
+
+for path, subdirs, files in os.walk(src_directory):
+    for name in files:
+        if name.endswith(".html"):
+            bc.convert("gutenberg", os.path.join(path, name), "easy", "output/gutenberg/plato")
+            time.sleep(1)

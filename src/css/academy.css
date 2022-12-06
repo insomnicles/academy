@@ -371,6 +371,9 @@ li {
   font-size: 11px;
 }
 
+q {
+  font-style: italic;
+}
 q::before {
   content: "«";
 }

@@ -1,16 +1,18 @@
+.vscode
 TODO.md
 CODE.md
 beautify_sophocles.py
 
+__pycache__
 
 src/*
-!src/books/guttenberg
+!src/books/gutenberg
 !src/css
 !src/js
 !src/images/icons
 !src/images/art
 
 output/*
-!output/guttenberg
-!output/jekyll-pages
+# !output/gutenberg
+# !output/jekyll-pages
 
