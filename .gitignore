@@ -2,7 +2,7 @@
 TODO.md
 CODE.md
 beautify_sophocles.py
-
+download.py
 __pycache__
 
 src/*
@@ -16,3 +16,4 @@ output/*
 # !output/gutenberg
 # !output/jekyll-pages
 
+tests/*
