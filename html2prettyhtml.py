@@ -24,10 +24,10 @@ def html2prettyhtml(id, outputdir, theme, fromlocaldir, all, verbose, debug):
     """
 
     if verbose:
-        logging.basicConfig(filename='html2prettyhtml.log', filemode="w", level=logging.INFO)
+        logging.basicConfig(filename='html2prettyhtml.log', filemode="a", level=logging.INFO)
 
     if debug:
-        logging.basicConfig(filename='html2prettyhtml.log', filemode="w", level=logging.DEBUG)
+        logging.basicConfig(filename='html2prettyhtml.log', filemode="a", level=logging.DEBUG)
 
     themes = [ "easy" ]
     if theme not in themes:
@@ -86,7 +86,6 @@ class Html2PrettyHtml:
                 raise Exception("Theme " + theme + " was not recognized.")
 
             crt.create(self.structured_doc)
-            #filename = self.structured_doc['metadata']['dc.title'] + ".html" if self.structured_doc['metadata']['dc.title'] != "" else self.structured_doc['src']['filename']
             filename = self.structured_doc['src']['filename']
             crt.save(output_dir, filename)
 
@@ -95,10 +94,9 @@ class Html2PrettyHtml:
             logging.info('Converted File Successfully to %s.' % self.output_dir + filename)
             self.reset()
         except Exception as e:
-            print(e)
+            logging.error("Exception occurred", exc_info=True)
             self.reset()
             return
-
 
     def reset(self):
         self.source, self.source_work, self.theme, self.output_dir = "", "", "", ""
