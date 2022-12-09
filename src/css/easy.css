@@ -2,26 +2,30 @@
 
 /* https://coolors.co/palette/780000-c1121f-fdf0d5-003049-669bbc */
 :root {
+  /* Color Palette */
   --primary: #780000;
   --primary-light: #C1121F;
   --secondary-dark: #003049;
   --secondary-light: #669BBC;
-  --background-light: #FDF0D5;
+  --tertiary-light: #FDF0D5;
   --highlight: #C8C8C8;
 
   --link-color: var(--primary-light);
   --link-color-hover: var(--primary);
   --text-color: black;
 
-  --explanation-bg-color: var(--background-light);
+  /* Nav Bar */
+  --nav-bg-color: var(--tertiary-light);
+  --nav-hover-color: var(--highlight);
+  --nav-img-color: var(--link-color);
+
+  --explanation-bg-color: var(--tertiary-light);
   --explanation-color: var(--text-color);
 
-  --reader-nav-bg: var(--background-light);
-  --reader-nav-hover: var(--highlight);
-  --reader-nav-img: var(--link-color);
-
+  /* Table of Contents */
   --toc-border-color: var(--text-color);
 
+  /* In text */
   --chapter-ref: var(--primary-light);
   --speech-ref: var(--primary-light);
   --sentence-ref: var(--primary-light);
@@ -53,12 +57,12 @@
 #book_reader_nav {
   position: fixed;  /* Sticky/fixed book_reader_nav */
   overflow: hidden;
-  background-color: var(--reader-nav-bg);
+  background-color: var(--nav-bg-color);
   color: var(--text-color);
   width: 100%;
   top: 0;           /* At the top */
   margin-bottom: 10px;
-  z-index: 99;
+  z-index: 50;
   display:flex;
   justify-content:center;
 }
@@ -74,7 +78,7 @@
 }
 
 #book_reader_nav a:hover {
-  background-color: var(--reader-nav-hover);
+  background-color: var(--nav-hover-color);
 }
 
 .filter-nav {
@@ -82,7 +86,7 @@
 }
 
 .nav_img {
-  color: var(--reader-nav-img);
+  color: var(--nav-img-color);
   text-decoration: none;
   height: 25px;
 }
@@ -152,7 +156,7 @@
 
 .explanation_selected {
   color: var(--link-color);
-  background-color: var(--explanation-bg);
+  background-color: var(--explanation-bg-color);
 }
 
 /*
@@ -325,6 +329,23 @@ li {
   font-family: sans-serif;
 }
 
+.image_container {
+  display:flex;
+  justify-content:center;
+  flex-direction: column;
+  align-items: center;
+}
+
+figcaption {
+  max-width: 400px;
+  font-size: 12px;
+}
+
+.figcaption_number {
+  font-weight: bold;
+}
+
+
 .stephanus {
   position: absolute;
   left: 100%;
@@ -380,21 +401,23 @@ q::before {
 q::after {
   content: "»";
 }
-/* Dark Mode CSS
+
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  /* :root {
     --body-bg: #212529;
     --body-color: #6c757d;
     --link-color: #dee2e6;
     --link-color-hover: #fff;
-  }
+  } */
   body {
-    background-color: red;
+    /* background-color: red; */
+    background: #333;
+    color: white;
   }
-  .book_reader {
+  /* .book_reader {
     background-color: blue;
-  }
+  } */
   img {
     opacity: .75;
     transition: opacity .5s ease-in-out;
@@ -402,5 +425,5 @@ q::after {
   img:hover {
     opacity: 1;
   }
-} */
+}
 

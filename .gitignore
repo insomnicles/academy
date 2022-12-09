@@ -3,6 +3,8 @@ TODO.md
 CODE.md
 beautify_sophocles.py
 download.py
+*.log
+
 __pycache__
 
 src/*

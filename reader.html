@@ -6,30 +6,31 @@
     <meta name="title" content="Awesome Book" />
     <meta name="authors" content="Jane Smith" />
     <meta name="translator" content="Joshua Robert Lee" />
-    <meta name="source" content="Internet Classics Archive" />
-    <meta name="source_url" content="http://www.website.qq/Smith/sense.html"/>
-    <meta name="source_local_file" content="src/smith/book.html" />
+    <meta name="source" content="Project Gutenberg" />
+    <meta name="source_url" content="https://www.gutenberg.org/ebooks/100"/>
+    <meta name="source_local_file" content="src/smith/sharekespeare.html" />
     <meta name="source_licence" content="Public domain."/>
-    <meta name="source_licence_url" content="http://website.qq/copyright.html"/>
-    <meta name="source_original" content="" />
+    <meta name="source_licence_url" content="https://www.gutenberg.org/policy/license.html"/>
     <meta name="description" content="Book Title, part of public domain collection"/>
     <meta name="keywords" content="classical, literature, awesome"/>
     <title>Book Title | Jane Smith</title>
-    <link href="src/css/academy.css" rel="stylesheet" />
-    <script type="text/javascript" src="src/js/academy.js"></script>
+    <link href="src/css/easy.css" rel="stylesheet" />
+    <script type="text/javascript" src="src/js/reader.js"></script>
   </head>
-  <body>
+  <body >
     <div id="book_reader_container">
-      <div id="book_reader_nav">
+      <div id="book_reader_nav" onload="navSetup()">
         <a href="/">Aquarium</a>
-        <a href="#" onclick="return formatSize()" ><img class="nav_img filter-nav" src="./src/images/icons/format_size.svg" /></a>
         <a href="#" onclick="return showToc()" ><img class="nav_img filter-nav" src="./src/images/icons/toc.svg" /></a>
         <a href="#" onclick="return firstSection()" ><img class="nav_img filter-nav" src="./src/images/icons/navigate_skip_previous.svg" /></a>
         <a href="#" onclick="return previousSection()" ><img class="nav_img filter-nav" src="./src/images/icons/navigate_previous.svg" /></a>
         <a href="#" onclick="return nextSection()" ><img class="nav_img filter-nav" src="./src/images/icons/navigate_next.svg" /></a>
         <a href="#" onclick="return lastSection()" ><img class="nav_img filter-nav" src="./src/images/icons/navigate_skip_next.svg" /></a>
-        <a href="#" onclick="return darkMode()" ><img class="nav_img filter-nav" src="./src/images/icons/dark_mode.svg" /></a>
-        <a href="#" onclick="return lightMode()" ><img class="nav_img filter-nav" src="./src/images/icons/light_mode.svg" /></a>
+        <a href="#" onclick="return showExplanations()" ><img class="nav_img filter-nav" src="./src/images/icons/quick_ref.svg" /></a>
+        <a href="#" onclick="return hideRefs()" ><img class="nav_img filter-nav" src="./src/images/icons/info.svg" /></a>
+        <a href="#" onclick="return formatSize()" ><img class="nav_img filter-nav" src="./src/images/icons/format_size.svg" /></a>
+        <a href="#" onclick="return darklightMode('dark')" ><img id="link_dark_mode" class="nav_img filter-nav" src="./src/images/icons/dark_mode.svg" /></a>
+        <a href="#" onclick="return darklightMode('light')" ><img id="link_light_mode" class="nav_img filter-nav" style="display:none;" src="./src/images/icons/light_mode.svg" /></a>
       </div>
       <div class="book_reader">
         <div class="explanation_container" style="display:block">
@@ -54,17 +55,17 @@
           </h2>
           <h3 class="book_translator" lang="en">Translated by Robert Lee</h3>
           <p class="book_source_and_license">
-            <small><a href="http://gutenberg.org/book.html">Source</a>&nbsp;and&nbsp;<a href="https://www.gutenberg.org/policy/license.html">©License</a></small>
+            <small><a href="https://www.gutenberg.org/ebooks/100">Source</a>&nbsp;and&nbsp;<a href="https://www.gutenberg.org/policy/license.html">©License</a></small>
           </p>
           <div class="book_toc">
             <h3 class="book_toc_entry" lang="en">
-              <a href="#" onclick="return showDiv(0)">Introduction</a>
+              <a href="#" onclick="return showSection(0)">Introduction</a>
             </h3>
             <h3 class="book_toc_entry" lang="en">
-              <a href="#" onclick="return showDiv(1)">Dialogue</a>
+              <a href="#" onclick="return showSection(1)">Dialogue</a>
             </h3>
             <h3 class="book_toc_entry" lang="en">
-                <a href="#" onclick="return showDiv(2)">Poem</a>
+                <a href="#" onclick="return showSection(2)">Poem</a>
               </h3>
           </div>
           <div id="0" class="book_section">
@@ -95,11 +96,10 @@
                  totam. Qui quis deserunt sed rerum deleniti ea magni</span>Lorem ipsum dolor sit amet. Quo quibusdam quibusdam et ullam <q>ullam quasi vel sunt sunt ut accusamus</q> quasi vel sunt sunt ut accusamus perspiciatis et vitae consequuntur ut adipisci dolor nam magnam officia.
                 Et similique consequatur et praesentium veritatis aut facilis galisum. At repellat doloremque eum veniam sint ut quia atque qui iste atque aut voluptate quae!</p>
             </p>
-            <div style="display:flex; justify-content:center;flex-direction: column;/*! text-align: center; */align-items: center;" class="image_paragraph">
-              <img src="./src/images/art/montmartre-pissarro.jpg" style="/*! text-align: center; */" id="fig-1.1" class="book_image" width="300px" height="300px">
-              <figcaption style="max-width: 400px;font-size: 12px;">Figure 1-1: Camille Pissarro, 1897. The Boulevard Montmartre on a Winter Morning. Oil on canvas. 
-                http://www.metmuseum.org/art/collection/search/437310
-                Repository: Metropolitan Museum of Art, New York, NY</figcaption></div>
+            <div class="image_container">
+              <img class="book_image" id="fig-1.1" src="./src/images/art/montmartre-pissarro.jpg" style="width: 300px; height: 300px;" >
+              <figcaption><span class="figcaption_number">Figure 1-1:</span>Camille Pissarro, 1897. The Boulevard Montmartre on a Winter Morning. Oil on canvas. http://www.metmuseum.org/art/collection/search/437310 Repository: Metropolitan Museum of Art, New York, NY</figcaption>
+            </div>
             <p class="book_paragraph">
               <span class="ref">004</span><span class="sidenote">sunt sunt ut accusamus perspiciatis et vitae consequuntur ut adipisci dolor nam magnam officia.
                 Ea illum error aut corrupti facilis ea eligendi voluptatem cum nemo quibusdam in voluptate enim! Id molestiae voluptatibus 33 autem quisquam et omnis
