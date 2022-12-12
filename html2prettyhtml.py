@@ -16,8 +16,11 @@ import logging
 @click.option('--all', is_flag=True, help='Process all files in a local directory. Id argument will be ignored.')
 @click.option('--verbose', is_flag=True, help='Get extra information about what\'s happening behind the scenes.')
 @click.option('--debug', is_flag=True, help='Turn on debugging messages.')
+@click.option('--savejson', is_flag=True, help='Save extraction json file.')
+@click.option('--savesrc', is_flag=True, help='Saves Project Gutenberg source file to the output directory.')
+# save src to out
 
-def html2prettyhtml(id, outputdir, theme, fromlocaldir, all, verbose, debug):
+def html2prettyhtml(id, outputdir, theme, fromlocaldir, all, verbose, debug, savejson, savesrc):
     """ html2prettyhtml converts a Project Gutenberg book in html into pretty html reader.
     The reader is stylized by theme, the default being the "easy" theme.
     The books are retrieved from Project Guternberg directly or from a local source directory.
@@ -45,25 +48,25 @@ def html2prettyhtml(id, outputdir, theme, fromlocaldir, all, verbose, debug):
         for path, subdirs, files in os.walk(local_dir):
             for name in files:
                 if name.endswith(".html"):
-                    bc.convert("gutenberg", os.path.join(path, name), outputdir, theme)
+                    bc.convert("gutenberg", os.path.join(path, name), outputdir, theme, savejson, savesrc)
                     time.sleep(0.25)
             return
 
     if fromlocaldir:
         local_dir = fromlocaldir if fromlocaldir[-1] == "/" else fromlocaldir + "/"
         file_source = local_dir + "pg" + str(id) + "-images.html"
-        bc.convert("gutenberg", file_source, outputdir, theme)
+        bc.convert("gutenberg", file_source, outputdir, theme, savejson, savesrc)
         return
 
     url_source = "https://www.gutenberg.org/cache/epub/" + str(id) + "/" + "pg" + str(id) + "-images.html"
-    bc.convert("gutenberg", url_source, outputdir, theme)
+    bc.convert("gutenberg", url_source, outputdir, theme, savejson, savesrc)
 
 
 class Html2PrettyHtml:
     source, source_work, theme, output_dir = "", "", "", ""
     structured_doc = None
 
-    def convert(self, source, source_work, output_dir, theme):
+    def convert(self, source, source_work, output_dir, theme, save_json, save_src):
         print('Started conversion from file %s.' % source_work)
         logging.info('Started converting %s.' % source_work)
 
@@ -71,10 +74,9 @@ class Html2PrettyHtml:
         self.source_work = source_work
         self.theme = theme
         self.output_dir = output_dir if output_dir[-1] == "/" else output_dir + "/"
-
         try:
             if (source == "gutenberg"):
-                ext = GutenbergExtractor(source_work, self.output_dir)
+                ext = GutenbergExtractor(source_work, self.output_dir, save_json, save_src)
             else:
                 raise Exception("Could not find a suitable extractor")
             self.structured_doc = ext.extract()
@@ -91,7 +93,7 @@ class Html2PrettyHtml:
 
             del crt
             print("Converted File Successfully to " + self.output_dir + filename)
-            logging.info('Converted File Successfully to %s.' % self.output_dir + filename)
+            logging.info('Converted File Successfully to ' + self.output_dir + filename + "\n")
             self.reset()
         except Exception as e:
             logging.error("Exception occurred", exc_info=True)

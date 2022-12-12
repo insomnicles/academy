@@ -10,7 +10,11 @@ You will need to install python 3+ if you don't already have it.
 Modify html2prettyhtml.py to choose theme, output directory and which works you want to convert. By default, Plato's works are retrieved from Gutenberg.
 
 ```
-    python html2prettyhtml.py
+    python html2prettyhtml.py 2412 output/test
+    python html2prettyhtml.py 2412 output/test --theme=easy
+    python html2prettyhtml.py 2412 output/test --fromlocaldir=src/gutenberg
+    python html2prettyhtml.py 2412 output/test --fromlocaldir=src/gutenberg --all
+    python html2prettyhtml.py 2412 output/test --fromlocaldir=src/gutenberg --all --theme=easy
 ```
 
 Optionally, you can also create jekyll pages from the converted html pages. Update source and output directories in shell script and then run.

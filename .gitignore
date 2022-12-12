@@ -3,7 +3,11 @@ TODO.md
 CODE.md
 beautify_sophocles.py
 download.py
+download-plato.py
+toc.txt
 *.log
+verified.txt
+verified.json
 
 __pycache__
 

@@ -100,7 +100,6 @@ function darklightMode(mode) {
     var dark_link = document.getElementById('link_dark_mode');
     var light_link = document.getElementById('link_light_mode');
 
-    console.log(mode);
     if (mode == 'dark') {
         light_link.style.display = "block";
         dark_link.style.display = "none";
@@ -141,7 +140,6 @@ function formatSize() {
     var books_sections = document.getElementsByClassName('book_section');
     for (let i = 0; i < books_sections.length; i++) {
         books_sections[i].style.fontSize = newFontSize;
-        // books_sections[i].style.backgroundColor = 'lime';
     }
     var speeches = document.getElementsByClassName('speech');
     for (let i = 0; i < speeches.length; i++) {
