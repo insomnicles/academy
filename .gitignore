@@ -11,6 +11,10 @@ verified.json
 
 __pycache__
 
+src/archive
+
+src-books/*
+
 src/*
 !src/books/gutenberg
 !src/css

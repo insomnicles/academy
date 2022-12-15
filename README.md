@@ -3,6 +3,8 @@
 Python scripts for converting books from [Project Gutenberg](https://www.gutenberg.org) in html into pretty html reader.
 Right now the scripts are adapted to books by Plato, Aristotle and Greek Tragedians but will also work for others.
 
+Text converted using the scripts, mostly Greek philosophy and theatre, are available on [insomnicles.github.io/academy](Academy Github site)
+
 ## Usage
 
 You will need to install python 3+ if you don't already have it.
