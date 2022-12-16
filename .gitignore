@@ -12,15 +12,9 @@ verified.json
 __pycache__
 
 src/archive
+src/output/* 
 
 src-books/*
-
-src/*
-!src/books/gutenberg
-!src/css
-!src/js
-!src/images/icons
-!src/images/art
 
 output/*
 # !output/gutenberg
