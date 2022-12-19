@@ -2,7 +2,7 @@
 
 Python scripts for converting books from [Project Gutenberg](https://www.gutenberg.org) in html into pretty html reader. The script has been test for Plato, Aristotle and a number of other philosophical works, but will also work for others in the Project Gutenberg library. It will not work for every book.
 
-*Work in Progress**: annotations, images and footnotes and other improvements.
+**Work in Progress**: annotations, images and footnotes and other improvements.
 
 Philosophy books converted using the scripts are available on [insomnicles.github.io/academy](Academy site)
 
