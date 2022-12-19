@@ -87,7 +87,7 @@ class SimpleBeautifier(Beautifier):
         ref = self.create_ref(par_num)
         return f""" """
 
-    def create_poem_html(self, section_id, par_id, par_num) -> str:
+    def create_poem(self, section_id, par_id, par_num) -> str:
         lines = ""
 
         ref = self.create_ref(par_num)
@@ -123,14 +123,14 @@ class SimpleBeautifier(Beautifier):
 """
 
     def create_images(self, section_id, par_id) -> str:
-        images_html = ""
+        images_tex = ""
 
         images = self.body[section_id][par_id]['images']
         if not images:
             return ""
 
         for image in images:
-            figcaption_html = ""
+            figcaption = ""
             img = images[image]
             id = img['id'] or 0
             src = img['src'] or ""
@@ -139,13 +139,13 @@ class SimpleBeautifier(Beautifier):
             height = img['height'] or 400
             width = img['width'] or 400
 
-            images_html += f""""""
+            images_tex += f""""""
             if caption != "":
-                images_html += f""""""
+                images_tex += f""""""
 
         return f""" """
 
-    def create_footnotes_html(self, section_id, par_id) -> str:
+    def create_footnotes(self, section_id, par_id) -> str:
         footnotes = self.body[section_id][par_id]['footnotes']
         if not footnotes:
             return ""
@@ -159,7 +159,7 @@ class SimpleBeautifier(Beautifier):
         sections_tex = ""
 
         # if self.toc['table_html'] != "":
-        #     sections_html += f""" {self.toc['table_html']}"""
+        #     sections_tex += f""" {self.toc['table_html']}"""
 
         for section_id in self.body:
             sec_tex = ""
@@ -187,9 +187,9 @@ class SimpleBeautifier(Beautifier):
 
                 # Annotation: images, footnotes
                 if self.par_has('images', section_id, par_id):
-                    sec_html += self.create_images(section_id, par_id)
+                    sec_tex += self.create_images(section_id, par_id)
                 if self.par_has('footnotes', section_id, par_id):
-                    sec_html += self.create_footnotes(section_id, par_id)
+                    sec_tex += self.create_footnotes(section_id, par_id)
             sections_tex += sec_tex
         return sections_tex
 
