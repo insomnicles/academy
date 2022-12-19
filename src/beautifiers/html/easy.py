@@ -1,69 +1,9 @@
+from ..beautifier import Beautifier
 import shutil
-import os
 import logging
+import os
 
-class Prettifier:
-    created_page_html = ""
-    src, metadata, toc, body = {}, {}, {}, {}
-
-    def __init__(self):
-        logging.basicConfig(filename='html2prettyhtml.log', filemode="a", level=logging.DEBUG)
-        logging.info('Created Prettifier')
-        pass
-
-    def create(self, structured_doc):
-        self.src = structured_doc['src']
-        self.metadata = structured_doc['metadata']
-        self.toc = structured_doc['toc']
-        self.body = structured_doc['body']
-
-        self.create_header_html()
-        self.create_headings_html()
-        self.create_toc_html()
-        self.create_sections_html()
-        self.create_page_html()
-
-    def save(self, output_dir, filename = ""):
-        if not self.created_page_html:
-            raise Exception("Error nothing to save: no html was created")
-
-        output_dir = output_dir if output_dir[-1] == "/" else output_dir + "/"
-        output_images_dir = output_dir + "images"
-        output_icon_dir = output_dir + "images/icons"
-        css_dir = output_dir + "css"
-        js_dir = output_dir + "js"
-
-        output_file = output_dir + self.src['filename'] if filename == "" else output_dir + filename
-
-        os.makedirs(output_dir, exist_ok=True)
-        os.makedirs(css_dir, exist_ok=True)
-        os.makedirs(js_dir, exist_ok=True)
-        os.makedirs(output_images_dir, exist_ok=True)
-        os.makedirs(output_icon_dir, exist_ok=True)
-
-        try:
-            fout = open(output_file, "w")
-            fout.write(self.created_page_html)
-            fout.close()
-            self.reset()
-
-            shutil.copy(self.src_css_file, css_dir);
-            shutil.copy(self.src_js_file, js_dir);
-            shutil.copytree(self.src_icons_dir, output_icon_dir, symlinks=False, ignore=None, ignore_dangling_symlinks=False, dirs_exist_ok=True)
-        except FileNotFoundError as e:
-            print("Error: File not found.")
-            logging.debug(e)
-            exit(1)
-        except Exception as e:
-            print("Error: could not write file.")
-            logging.debug(e)
-            exit(1)
-
-    def reset(self):
-        self.created_page_html = ""
-        self.src, self.metadata, self.toc, self.body = {}, {}, {}, {}
-
-class EasyPrettifier (Prettifier):
+class EasyBeautifier (Beautifier):
     src_css_file = "css/easy.css"
     src_js_file = "js/reader.js"
     src_icons_dir = "images/icons/"
@@ -71,10 +11,9 @@ class EasyPrettifier (Prettifier):
     output_js_dir = "js/"
 
     def __init__(self) -> None:
-        logging.info("Created EasyPrettifier")
+        logging.info("Created Easy Beautifier")
 
-    def create_page_html(self) -> str:
-
+    def create_doc(self) -> None:
         header_html = self.create_header_html()
         nav_html = self.create_nav_html()
         explanation_html = self.create_explanation_html()
@@ -82,22 +21,22 @@ class EasyPrettifier (Prettifier):
         toc_html = self.create_toc_html()
         sections_html = self.create_sections_html()
 
-        self.created_page_html = f"""<html>
-                                        {header_html}
-                                        <body>
-                                            <div id="book_reader_container" >
-                                                {nav_html}
-                                                <div class="book_reader">
-                                                    {explanation_html}
-                                                    <div class="book_container">
-                                                        {headings_html}
-                                                        {toc_html}
-                                                        {sections_html}
-                                                    </div>
+        self.created_doc = f"""<html>
+                                    {header_html}
+                                    <body>
+                                        <div id="book_reader_container" >
+                                            {nav_html}
+                                            <div class="book_reader">
+                                                {explanation_html}
+                                                <div class="book_container">
+                                                    {headings_html}
+                                                    {toc_html}
+                                                    {sections_html}
                                                 </div>
                                             </div>
-                                        </body>
-                                    </html>"""
+                                        </div>
+                                    </body>
+                                </html>"""
 
     def create_header_html(self) -> str:
         if not self.metadata:
@@ -342,3 +281,45 @@ class EasyPrettifier (Prettifier):
                                     {sec_html}
                                 </div>"""
         return sections_html
+
+    def save(self, output_dir, filename = ""):
+        if not self.created_doc:
+            raise Exception("Error nothing to save: no html was created")
+
+        output_dir = output_dir if output_dir[-1] == "/" else output_dir + "/"
+        output_images_dir = output_dir + "images"
+        output_icon_dir = output_dir + "images/icons"
+        css_dir = output_dir + "css"
+        js_dir = output_dir + "js"
+
+        output_file = output_dir + self.src['filename'] if filename == "" else output_dir + filename
+
+        os.makedirs(output_dir, exist_ok=True)
+        os.makedirs(css_dir, exist_ok=True)
+        os.makedirs(js_dir, exist_ok=True)
+        os.makedirs(output_images_dir, exist_ok=True)
+        os.makedirs(output_icon_dir, exist_ok=True)
+
+        try:
+            fout = open(output_file, "w")
+            fout.write(self.created_doc)
+            fout.close()
+            self.reset()
+
+            c_dir = os.path.dirname(os.path.abspath(__file__)) + "/"
+            src_icons_dir = c_dir + "icons/"
+            shutil.copy(c_dir + self.src_css_file, css_dir);
+            shutil.copy(c_dir + self.src_js_file, js_dir);
+            if os.path.exists(src_icons_dir):
+                shutil.copytree(src_icons_dir, output_icon_dir, symlinks=False, ignore=None, ignore_dangling_symlinks=False, dirs_exist_ok=True)
+            logging.info("Easy Beautification Complete.")
+        except FileNotFoundError as e:
+            print("Error: File not found.")
+            print(e)
+            logging.debug(e)
+            exit(1)
+        except Exception as e:
+            print("Error: could not write file.")
+            print(e)
+            logging.debug(e)
+            exit(1)

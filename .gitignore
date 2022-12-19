@@ -1,7 +1,6 @@
 .vscode
 TODO.md
 CODE.md
-beautify_sophocles.py
 download.py
 download-plato.py
 toc.txt
@@ -9,15 +8,11 @@ toc.txt
 verified.txt
 verified.json
 
-__pycache__
-
 src/archive
-src/output/* 
+src/images
 
 src-books/*
-
 output/*
-# !output/gutenberg
-# !output/jekyll-pages
-
 tests/*
+
+__pycache__
