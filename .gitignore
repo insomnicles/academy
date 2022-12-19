@@ -10,6 +10,8 @@ verified.json
 
 src/archive
 src/images
+src/images/all
+src/extractors/wikisource
 
 src-books/*
 output/*

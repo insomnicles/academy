@@ -72,45 +72,34 @@ class SimpleBeautifier(Beautifier):
         heading = self.body[section_id][par_id]['heading']
         return f"""\\section{{{heading}}}"""
 
-    def create_description_html(self, section_id, par_id) -> str:
+    def create_description(self, section_id, par_id) -> str:
         descriptor = self.body[section_id][par_id]["descriptor"]
         description = self.body[section_id][par_id]["description"]
 
-        return f""" <div class="book_description">
-                        <strong>{descriptor}</strong>:{description}
-                    </div>
-                """
+        return f""" """
 
-    def create_ref_html(self, par_num) -> str:
+    def create_ref(self, par_num) -> str:
         ref_num = str(par_num).zfill(3)
-        return f""" <span class="ref"> {ref_num} </span>"""
+        return f""" """
 
-    def create_pre_html(self, section_id, par_id, par_num) -> str:
+    def create_pre(self, section_id, par_id, par_num) -> str:
         sentences = self.body[section_id][par_id]['sentences'][0]
-        ref_html = self.create_ref_html(par_num)
-        return f""" <div class="pre">
-                        {ref_html}
-                        <pre> {sentences} </pre>
-                    </div>
-                """
+        ref = self.create_ref(par_num)
+        return f""" """
 
     def create_poem_html(self, section_id, par_id, par_num) -> str:
-        lines_html = ""
+        lines = ""
 
-        ref_html = self.create_ref_html(par_num)
+        ref = self.create_ref(par_num)
         for line in self.body[section_id][par_id]["lines"]:
-            lines_html += line + "<br>"
+            lines += line + "<br>"
 
-        return f""" <div class="poem">
-                        {ref_html}
-                        {lines_html}
-                    </div>
-                """
+        return f""" """
 
     def create_speech(self, section_id, par_id, par_num) -> str:
         sentences_tex = ""
 
-#        ref_html = self.create_ref_html(par_num)
+        #  ref = self.create_ref(par_num)
         speaker = self.body[section_id][par_id]["speaker"]
         sentences = self.body[section_id][par_id]['sentences']
 
@@ -124,7 +113,7 @@ class SimpleBeautifier(Beautifier):
 
     def create_text_par(self, section_id, par_id, par_num) -> str:
         sentences_tex = ""
-        # ref_html = self.create_ref_html(par_num)
+        # ref = self.create_ref(par_num)
         sentences = self.body[section_id][par_id]['sentences']
         for sentence in sentences:
             sentences_tex += " " + sentence
@@ -133,7 +122,7 @@ class SimpleBeautifier(Beautifier):
 \\par {sentences_tex}
 """
 
-    def create_images_html(self, section_id, par_id) -> str:
+    def create_images(self, section_id, par_id) -> str:
         images_html = ""
 
         images = self.body[section_id][par_id]['images']
@@ -150,15 +139,11 @@ class SimpleBeautifier(Beautifier):
             height = img['height'] or 400
             width = img['width'] or 400
 
-            images_html += f""" <img class="book_image" id="{id}" src="{src}" alt="{alt}" width="{width}" height="{height}">"""
+            images_html += f""""""
             if caption != "":
-                images_html += f""" <figcaption class="image_caption">{caption}</figcaption>"""
+                images_html += f""""""
 
-
-        return f""" <div class="image_container">
-                        {images_html}
-                    </div>
-                """
+        return f""" """
 
     def create_footnotes_html(self, section_id, par_id) -> str:
         footnotes = self.body[section_id][par_id]['footnotes']
@@ -174,10 +159,7 @@ class SimpleBeautifier(Beautifier):
         sections_tex = ""
 
         # if self.toc['table_html'] != "":
-        #     sections_html += f"""   <div id="toc" class="book_section">
-        #                                 {self.toc['table_html']}
-        #                             </div>
-        #                         """
+        #     sections_html += f""" {self.toc['table_html']}"""
 
         for section_id in self.body:
             sec_tex = ""
@@ -186,36 +168,34 @@ class SimpleBeautifier(Beautifier):
 
                 if (type == "heading"):
                     sec_tex += self.create_heading(section_id, par_id)
-        #         elif (type == "descriptor"):
-        #             sec_tex += self.create_description(section_id, par_id)
-        #         elif (type == "pre"):
-        #             sec_tex += self.create_pre(section_id, par_id, par_num)
-        #             par_num +=1
-        #         elif (type == "poem"):
-        #             sec_tex += self.create_poem(section_id, par_id, par_num)
-        #             par_num +=1
+                elif (type == "descriptor"):
+                    sec_tex += self.create_description(section_id, par_id)
+                elif (type == "pre"):
+                    sec_tex += self.create_pre(section_id, par_id, par_num)
+                    par_num +=1
+                elif (type == "poem"):
+                    sec_tex += self.create_poem(section_id, par_id, par_num)
+                    par_num +=1
                 elif (type == "text"):
                     sec_tex += self.create_text_par(section_id, par_id, par_num)
                     par_num +=1
                 elif (type == "speech"):
                     sec_tex += self.create_speech(section_id, par_id, par_num)
                     par_num +=1
-        #         else:
-        #             raise Exception("type not found:" + type)
+                else:
+                    raise Exception("type not found:" + type)
 
-        #         # Add Images, Footnotes
-        #         if self.par_has('images', section_id, par_id):
-        #             sec_html += self.create_images(section_id, par_id)
-        #         if self.par_has('footnotes', section_id, par_id):
-        #             sec_html += self.create_footnotes(section_id, par_id)
+                # Annotation: images, footnotes
+                if self.par_has('images', section_id, par_id):
+                    sec_html += self.create_images(section_id, par_id)
+                if self.par_has('footnotes', section_id, par_id):
+                    sec_html += self.create_footnotes(section_id, par_id)
             sections_tex += sec_tex
         return sections_tex
 
-    # (** overrides parent save method **)
     def save(self, output_dir, filename = ""):
         if not self.created_tex:
             raise Exception("Error nothing to save: no tex was created")
-
 
         curr_dir = os.path.dirname(os.path.abspath(__file__)) + "/"
         src_images_dir = curr_dir + "images/"
@@ -253,4 +233,3 @@ class SimpleBeautifier(Beautifier):
             exit(1)
 
         logging.info("Tex file saved")
-
