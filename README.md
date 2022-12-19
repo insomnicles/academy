@@ -36,8 +36,6 @@ Optionally, you can create jekyll pages from the outputed html pages. Update sou
 
 ## HTML Reader
 
-The output for "easy" theme is an *html reader*.
-
 ### Easy Theme
 
 ![Html Reader](html_reader-easy.png)
@@ -45,8 +43,6 @@ The output for "easy" theme is an *html reader*.
 ## Latex Document 
 
 ### Simple Theme
-
-The output for "simple" theme is a *tex document*.
 
 ![Latex Document](tex_document-simple.png)
 
