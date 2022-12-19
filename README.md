@@ -1,16 +1,16 @@
 ## Academy
 
-Python scripts for converting books from [Project Gutenberg](https://www.gutenberg.org) in html into pretty html reader. The script has been test for Plato, Aristotle and a number of other philosophical works, but will also work for others in the Project Gutenberg library. It will not work for every book.
+Python scripts for converting books from [Project Gutenberg](https://www.gutenberg.org) into beautiful html reader or latex document. The scripts have been tested for works by Plato and Aristotle but will work for others, though certainly not all.
 
-**Work in Progress**: annotations, images and footnotes and other improvements.
+**Work in Progress**: annotations, images, footnotes and other improvements.
 
-Philosophy books converted using the scripts are available on [insomnicles.github.io/academy](Academy site)
+Philosophy books converted using the scripts are available on the [Academy Site](https://insomnicles.github.io/academy)
 
 ## Requirements
 
 * **Python**: You will need to install [Python 3+](https://www.python.org/)
 
-* **Latex**: "simple" theme will output a latex file 'filename.tex'. To compile the tex document into pdf or ps, you will need [TexLive](https://texlive.org/) under linux, [MikTex](https://miktex.org/) under windows, or some other implementation of latex.
+* **Latex**: "simple" theme will output a latex file 'filename.tex'. To compile the tex document into pdf or ps, you will need [TexLive](https://texlive.org/) under linux, [MikTex](https://miktex.org/) under windows, or some other implementation of latex. You can use PDFLatex or Xelatex.
 
 ## Usage
 
@@ -34,15 +34,19 @@ Optionally, you can create jekyll pages from the outputed html pages. Update sou
     ./create_jekyll_pages
 ```
 
-## HTML Reader with Easy Theme
+## HTML Reader
 
 The output for "easy" theme is an *html reader*.
 
-![Html Reader](html_reader.png)
+### Easy Theme
 
-## Latex document with Simple Theme
+![Html Reader](html_reader-easy.png)
 
-The output for "simple" theme is a *tex document*. You can use PDFLatex or Xelatex.
+## Latex Document 
 
-![Latex Document](tex_document.png)
+### Simple Theme
+
+The output for "simple" theme is a *tex document*.
+
+![Latex Document](tex_document-simple.png)
 
