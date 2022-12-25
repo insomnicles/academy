@@ -72,8 +72,8 @@ class Extractor:
 
         self.construct_structured_doc()
 
-        if self.save_json: self.save_json()
-        if self.save_src: self.save_src()
+        if self.save_json: self.save_json_file()
+        if self.save_src: self.save_src_file()
 
         self.reset()
 
@@ -82,26 +82,32 @@ class Extractor:
 
     def construct_structured_doc(self):
         self.structured_doc['src'] = self.src
+        logging.info(self.structured_doc['src'])
         self.structured_doc['metadata'] = self.metadata
+        logging.info(self.structured_doc['metadata'])
         self.structured_doc['toc'] = self.toc
+        logging.info(self.structured_doc['toc'])
         self.structured_doc['sections'] = self.sections
+        logging.info(self.sections.keys())
         self.structured_doc['body'] = self.body
+        
 
-    def save_src(self):
+    def save_src_file(self):
         src_filename = self.output_dir + "src/" + self.src_filename
 
         try:
             os.makedirs(self.output_dir + "src/", exist_ok=True)
-            f = open(src_filename, "w")
+            f = open(src_filename, "wb")
             f.write(self.src_html)
             f.close()
             logging.info("Source file saved to " + src_filename)
         except Exception as e:
             print("Error: could not save source file %s" % src_filename)
             logging.info("Error: could not save source file %s" % src_filename)
+            logging.debug(e)
             exit(1)
 
-    def save_json(self):
+    def save_json_file(self):
         source = self.src_file if (self.src_file) else self.src_url
         json_filename = self.output_dir + "json/" + source.split("/")[-1].split(".")[0] + ".json"
 
@@ -113,7 +119,8 @@ class Extractor:
             logging.info("JSON file saved to " + json_filename)
         except Exception as e:
             print("Error: could not save json file %s" % json_filename)
-            logging.info("Error: could not save source file %s" % json_filename)
+            logging.info("Error: could not save json file %s" % json_filename)
+            logging.debug(e)
             exit(1)
 
     def reset(self):

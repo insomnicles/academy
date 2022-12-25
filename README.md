@@ -1,8 +1,10 @@
 ## Academy
 
-Python scripts for converting books from [Project Gutenberg](https://www.gutenberg.org) into beautiful html reader or latex document. The scripts have been tested for works by Plato and Aristotle but will work for others, though certainly not all.
+![StyleCIBanner](https://github.styleci.io/repos/558952677/shield)
 
-**Work in Progress**: annotations, images, footnotes and other improvements.
+Python script for converting books from [Project Gutenberg](https://www.gutenberg.org) into theme-based html reader or LaTex document. The script has been tested for works by Plato and Aristotle. It will work for others but for many it won't due to varying markup.
+
+**Work in Progress**: images, footnotes and sidenotes.
 
 Philosophy books converted using the scripts are available on the [Academy Site](https://insomnicles.github.io/academy)
 
@@ -19,7 +21,7 @@ The output is either a html file or a latex document. The themes for each are as
 - Latex Document: simple
 
 
-You can convert a book from gutenberg directly (1) or from a local file (2). You can also convert an entire directory (3) -- note that the id argument must be supplied but will be ignored in this case. Finally, you can add "--save" or "--savejson" options (4, 5) to save the source file or the extraction to the output directory.
+You can convert a book from gutenberg directly (1) or from a local file (2). You can also convert an entire directory (3) -- note that the id argument must be supplied but will be ignored in this case. Finally, you can add "--save" or "--savejson" options (4, 5) to save the source file or the extraction json file to the output directory.
 
 ```
     1. python beautify_guttenberg.py 2412 output/test easy

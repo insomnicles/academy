@@ -12,15 +12,15 @@ import logging
 @click.argument('theme')
 @click.option('--fromlocaldir', is_flag=False,help='Process book with **id** from a local directory instead of retrieving from url.')
 @click.option('--all',          is_flag=True, help='Process all files in a local directory. Id argument will be ignored.')
-@click.option('--save',         is_flag=True, help='Saves Project Gutenberg source file to the output directory.')
-@click.option('--json',         is_flag=True, help='Saves extraction into json file to the output directory.')
+@click.option('--savesrc',     is_flag=True, help='Saves Project Gutenberg source file to the output directory.')
+@click.option('--savejson',    is_flag=True, help='Saves extraction into json file to the output directory.')
 @click.option('--verbose',      is_flag=True, help='Get extra information about what\'s happening behind the scenes.')
 @click.option('--debug',        is_flag=True, help='Turn on debugging messages.')
 
-def beautify_gutenberg(id, dir, theme, fromlocaldir, all, save, json, verbose, debug):
+def beautify_gutenberg(id, dir, theme, fromlocaldir, all, savesrc, savejson, verbose, debug):
     """ Converts a Project Gutenberg book with [ID] into a HTML or TEX format with [THEME] into directory [DIR].
     THEME: \n
-    html reader: easy, green\n
+    html reader: easy\n
     tex document: simple\n
     See website for examples of type and theme.
     """
@@ -52,16 +52,16 @@ def beautify_gutenberg(id, dir, theme, fromlocaldir, all, save, json, verbose, d
         for path, subdirs, files in os.walk(local_dir):
             for name in files:
                 if name.endswith(".html"):
-                    bg.convert("gutenberg", os.path.join(path, name), dir, theme, json, save)
+                    bg.convert("gutenberg", os.path.join(path, name), dir, theme, savejson, savesrc)
     # beautify one local file
     elif fromlocaldir:
         local_dir = fromlocaldir if fromlocaldir[-1] == "/" else fromlocaldir + "/"
         file_source = local_dir + "pg" + str(id) + "-images.html"
-        bg.convert("gutenberg", file_source, dir, theme, json, save)
+        bg.convert("gutenberg", file_source, dir, theme, savejson, savesrc)
     # beautify one from URL
     else:
         url_source = "https://www.gutenberg.org/cache/epub/" + str(id) + "/" + "pg" + str(id) + "-images.html"
-        bg.convert("gutenberg", url_source, dir, theme, json, save)
+        bg.convert("gutenberg", url_source, dir, theme, savejson, savesrc)
     del bg
     exit(0)
 
@@ -111,6 +111,7 @@ class BeautifyGutenberg:
         except Exception as e:
             print("Error: Conversion could not be completed.")
             logging.debug("Exception occurred", exc_info=True)
+            logging.debug(e)
             exit(1)
 
 if __name__ == '__main__':

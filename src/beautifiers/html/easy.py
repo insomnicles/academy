@@ -174,7 +174,7 @@ class EasyBeautifier (Beautifier):
         sentences_html = ""
 
         ref_html = self.create_ref_html(par_num)
-        speaker = self.body[section_id][par_id]["speaker"]
+        speaker = self.body[section_id][par_id]['speaker']
         sentences = self.body[section_id][par_id]['sentences']
 
         for sentence in sentences:

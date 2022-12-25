@@ -17,7 +17,7 @@ class SimpleBeautifier(Beautifier):
         sections = self.create_sections()
 
         self.created_tex = f"""
-\\documentclass[11pt,letter]{{book}}
+\\documentclass[11pt,letter]{{article}}
 {header}
 {title_page}
 {toc}
@@ -25,23 +25,25 @@ class SimpleBeautifier(Beautifier):
 \end{{document}}"""
         logging.info("Beautification Complete")
 
+#\\usepackage{{fontawesome,url}}
+# \\usepackage{{tocloft}}
+# \\usepackage[stable]{{footmisc}}
+# \\usepackage{{color}}
+# \\usepackage{{hyperref}}
+# \\hypersetup{{colorlinks=true, linktoc=all, linkcolor=black }}
+# \\setlength\\cftparskip{{-2pt}}
+# \\setlength\\cftbeforechapskip{{-1pt}}
+# \\setcounter{{chapter}}{{1}}
+# \\setcounter{{section}}{{1}}
+# \\setcounter{{secnumdepth}}{{0}}
+# \\setlength{{\parskip}}{{5pt}}
+# \\setlength{{\parindent}}{{0pt}}
+# \\setlength{{\columnsep}}{{30pt}}
+# \\usepackage{{blindtext}}
+
     def create_header(self) -> str:
         temp = f"""
-\\usepackage{{fontawesome,url}}
-\\usepackage{{tocloft}}
-\\usepackage[stable]{{footmisc}}
-\\usepackage{{color}}
-\\usepackage{{hyperref}}
-\\hypersetup{{colorlinks=true, linktoc=all, linkcolor=black }}
-\\setlength\\cftparskip{{-2pt}}
-\\setlength\\cftbeforechapskip{{-1pt}}
-\\setcounter{{chapter}}{{1}}
-\\setcounter{{section}}{{1}}
-\\setcounter{{secnumdepth}}{{0}}
-\\setlength{{\parskip}}{{5pt}}
-\\setlength{{\parindent}}{{0pt}}
-\\setlength{{\columnsep}}{{30pt}}
-\\usepackage{{blindtext}}
+
 \\begin{{document}}"""
         return temp
 
@@ -66,6 +68,7 @@ class SimpleBeautifier(Beautifier):
 \tableofcontents
 \renewcommand{\baselinestretch}{1.0}
 \normalsize
+\newpage
 """
 
     def create_heading(self, section_id, par_id) -> str:
@@ -203,14 +206,25 @@ class SimpleBeautifier(Beautifier):
         output_dir = output_dir if output_dir[-1] == "/" else output_dir + "/"
         output_images_dir = output_dir + "images"
         if filename == "":
-            filename = self.src['filename'].split(".")[0] + '.tex'
-        output_file = output_dir + filename
+            filename = self.src['filename'].split(".")[0]
+            filename_tex = filename + '.tex'
+        output_file = output_dir + filename_tex
 
         try:
             os.makedirs(output_dir, exist_ok=True)
             fout = open(output_file, "w")
             fout.write(self.created_tex)
             fout.close()
+
+            pdfshellcmd = "pdflatex -synctex=1 -interaction=nonstopmode -output-directory " + output_dir + " " + output_file
+            print(pdfshellcmd)
+
+            os.system(pdfshellcmd)
+            os.system(pdfshellcmd)
+
+            output_filename = output_dir + filename
+            shellcmd = "rm " + output_filename + '.log && rm ' + output_filename + '.aux && rm ' + output_filename + '.toc && rm ' + output_filename + '.synctex.gz'
+            os.system(shellcmd)
             self.reset()
         except FileNotFoundError as e:
             print("Beautifier Error: " + output_file + " not found.")

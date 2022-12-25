@@ -54,14 +54,22 @@ class GutenbergExtractor(Extractor):
         self.metadata = metadata
 
     def extract_toc(self):
-        toc_indicators = [ "#link2H", "#toc", "#ch", "#chap", "#Chapter", "#CHAPTER", "#pref", "#intro", "#Book", "#RULE", "#Bk", "#vol", "#biblio", "#I", "#V", "#X", "#para", "#part"]
+        toc_indicators = [ "#link2H", "#toc", "#ch", "#chap", "#Chapter", "#CHAPTER", "#pref", "#intro", "#Book", "#RULE", "#Bk", "#vol", "#biblio", "#I", "#V", "#X", "#para", "#part", "#pg"]
+        toc_disqualifiers = [ "fn", "footnote" ]
 
         self.toc = {}
         toc = {'toc': {}}
+        disqualified = False
         soup = BeautifulSoup(self.src_html, 'html5lib')
         for tag in soup.body.find_all('a'):
             if (tag.get('href') is not None):
                 href = tag.get('href')
+                disqualified = False
+                for disqualifier in toc_disqualifiers:
+                    if (disqualifier in href):
+                        disqualified = True
+                        break
+                if disqualified: continue
                 for indicator in toc_indicators:
                     if (indicator.upper() in href.upper()):
                         toc['toc'][href[1:]] = tag.text.strip()
@@ -155,7 +163,19 @@ class GutenbergExtractor(Extractor):
         #         logging.info(f'Found: {entity.text} of type: {entity.label_}')
         #         print(f'Found: {entity.text} of type: {entity.label_}')
 
-        return firstColon.isupper() and firstColon in speakers
+        # first word seperated by colon is a known speaker
+        if firstColon.isupper() and firstColon in speakers:
+            return True
+
+        if (tag.get('class') is not None and "dlg" in tag.get('class')):
+            return True
+        # firstSen = tag.text.split('.')[0].strip()
+        # # first paragraph sentence is capitalized
+        # if firstSen.isupper():
+        #     return True
+        # part of speech - Name?
+
+        return False
 
     def isImage(self, tag) -> bool:
         return tag.name == "img" and tag.get('src') != ""
@@ -225,6 +245,12 @@ class GutenbergExtractor(Extractor):
             elif child.name == "i":
                 # logging.info("CHILD <I>")
                 pass
+            elif child.name == "ins":
+                # logging.info("CHILD <I>")
+                pass
+            elif child.name == "b":
+                # logging.info("CHILD <I>")
+                pass
             elif child.name == "em":
                 # logging.info("CHILD <I>")
                 pass
@@ -245,7 +271,7 @@ class GutenbergExtractor(Extractor):
                 # logging.info(child.attrs.values())
                 pass
             else:
-                logging.info("CHILD NAME NOT RECOGNIZED: " + child.name)
+                # logging.info("CHILD NAME NOT RECOGNIZED: " + child.name)
                 logging.info(child.attrs.values())
         return ( images, footnotes, annotations)
 
