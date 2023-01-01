@@ -6,7 +6,6 @@ import click
 import logging
 
 import urllib.error
-#from urlextract import URLExtract
 from urllib.error import URLError
 from urllib.error import HTTPError
 from urllib.request import urlopen
@@ -59,34 +58,39 @@ def convert_gutenberg(id, outputdir, theme, fromlocaldir, all, savesrc, savejson
 
     # Run
     if source == 'gutenberg':
-        converter = BeautifyGutenberg()
+        converter = BeautifyGutenberg(theme, savesrc, savejson)
     
     if all and fromlocaldir:
-        ofile = converter.convertAllLocal(fromlocaldir, outputdir, theme, savesrc, savejson)
+        ofile = converter.convertAllLocal(fromlocaldir, outputdir)
     elif fromlocaldir:
-        ofile = converter.convertFromLocal(id, fromlocaldir, outputdir, theme, savesrc, savejson)
+        ofile = converter.convertFromLocal(id, fromlocaldir, outputdir)
     else:
-        ofile = converter.convertFromUrl(id, outputdir, theme, savesrc, savejson)
-        print(ofile)
+        ofile = converter.convertFromUrl(id, outputdir)
     exit(0)
 
 class BeautifyGutenberg():
 
     save_src, save_json = False, False
+    theme = ""
 
-    def convertAllLocal(self, src_dir, output_dir, theme, save_src = False, save_json = False):
+    def __init__(self, theme, save_src, save_json) -> None:
+        self.save_src = save_src
+        self.save_json = save_json
+        self.theme = theme
+
+    def convertAllLocal(self, src_dir, output_dir):
         src_dir = src_dir if src_dir[-1] == "/" else src_dir + "/"
         output_dir = output_dir if output_dir[-1] == "/" else output_dir + "/"
     
         for path, subdirs, files in os.walk(src_dir):
             for name in files:
                 if "epub" in name:
-                    self.convert(os.path.join(path, name), output_dir, theme, save_src, save_json)
+                    self.convert(os.path.join(path, name), output_dir)
                 if name.endswith(".html"):
-                    self.convert(os.path.join(path, name), output_dir, theme, save_src, save_json)
+                    self.convert(os.path.join(path, name), output_dir)
         return
 
-    def convertFromLocal(self, src_id, src_dir, output_dir, theme,  save_src = False, save_json = False):
+    def convertFromLocal(self, src_id, src_dir, output_dir):
         src_dir = os.path.abspath(src_dir) + "/"
 
         processable_types = [ 'epub', 'html' ]
@@ -94,10 +98,10 @@ class BeautifyGutenberg():
             file_source = src_dir + "pg" + str(src_id) + "-images." + type
             if os.path.exists(file_source):
                 break
-        self.convert(file_source, output_dir, theme, save_src, save_json)
+        self.convert(file_source, output_dir)
         return
 
-    def convertFromUrl(self, id, output_dir, theme, save_src = False, save_json = False):
+    def convertFromUrl(self, id, output_dir):
         url_source = "https://www.gutenberg.org/cache/epub/" + str(id) + "/" + "pg" + str(id) + "-images.html"
 
         output_dir = output_dir if output_dir[-1] == "/" else output_dir + "/"
@@ -114,7 +118,7 @@ class BeautifyGutenberg():
             fout.write(f.read())
             fout.close()
 
-            return self.convert(src_file, output_dir, theme, save_src, save_json)
+            return self.convert(src_file, output_dir)
 
 
         except urllib.error.HTTPError as e:
@@ -126,14 +130,14 @@ class BeautifyGutenberg():
             logging.info("Error: could not open :" + self.src_url + " URL Error: Server Not Found")
             exit(1)
 
-    def convert(self, src_file, output_dir, theme, save_src = False, save_json = False) -> str:
+    def convert(self, src_file, output_dir) -> str:
         logging.info('Started converting %s.' % src_file)
 
         try:
-            ext = ExtractorFactory().create('gutenberg', src_file, output_dir, save_src, save_json)
+            ext = ExtractorFactory().create('gutenberg', src_file, output_dir, self.save_src, self.save_json)
             structured_doc = ext.extract()
 
-            beau = BeautifierFactory().create(theme)
+            beau = BeautifierFactory().create(self.theme)
             beau.create(structured_doc)
             output_file = beau.save(output_dir)
 

@@ -8,9 +8,9 @@ class TestBeautifyGutenberg(unittest.TestCase):
 
     # basic dialogue
     def test_convert_gutenberg(self):
-        bg = BeautifyGutenberg()
+        bg = BeautifyGutenberg('easy', True, True)
         expected='output/tests/pg1323-images.html'
-        actual=bg.convertFromUrl(1323, "output/tests", "easy", True, True)
+        actual=bg.convertFromUrl(1323, "output/tests")
         self.assertEqual(expected, actual)
 
 if __name__ == '__main__':

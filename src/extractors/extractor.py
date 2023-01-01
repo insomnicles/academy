@@ -44,8 +44,6 @@ class Extractor:
             logging.info("Error: could not extract html from file" + self.src_file)
             return
 
-       
-
     def extract(self):
 
         self.extract_metadata()
