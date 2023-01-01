@@ -313,6 +313,7 @@ class EasyBeautifier (Beautifier):
             if os.path.exists(src_icons_dir):
                 shutil.copytree(src_icons_dir, output_icon_dir, symlinks=False, ignore=None, ignore_dangling_symlinks=False, dirs_exist_ok=True)
             logging.info("Easy Beautification Complete.")
+            return output_file
         except FileNotFoundError as e:
             print("Error: File not found.")
             print(e)

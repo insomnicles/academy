@@ -196,7 +196,7 @@ class SimpleBeautifier(Beautifier):
             sections_tex += sec_tex
         return sections_tex
 
-    def save(self, output_dir, filename = ""):
+    def save(self, output_dir, filename = "") -> str:
         if not self.created_tex:
             raise Exception("Error nothing to save: no tex was created")
 
@@ -247,3 +247,4 @@ class SimpleBeautifier(Beautifier):
             exit(1)
 
         logging.info("Tex file saved")
+        return output_file

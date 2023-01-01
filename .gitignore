@@ -2,18 +2,15 @@
 TODO.md
 CODE.md
 download.py
-download-plato.py
-toc.txt
-*.log
-verified.txt
-verified.json
 
-src/archive
-src/images/art
-src/images/all
-src/extractors/wikisource
+archive/*
+logs/*
 
-src-books/*
+# src/download.py
+# src/gutenberg-metadata.json
+src/downloaders/*
+src/extractors/gutenberg/gutenberg_epub.py
+src/output*
 output/*
 tests/*
 

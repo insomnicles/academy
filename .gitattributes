@@ -1,1 +1,7 @@
 *.py filter=gitignore
+
+#ignore from git hub statistics
+*.html linguist-vendored
+*.htm linguist-vendored
+*.epub lingust-vendored
+*.txt linguist-vendored

@@ -2,11 +2,6 @@ from bs4 import BeautifulSoup
 import json
 import os
 import logging
-import urllib.error
-from urlextract import URLExtract
-from urllib.error import URLError
-from urllib.error import HTTPError
-from urllib.request import urlopen
 
 class Extractor:
     extractor = None
@@ -19,48 +14,37 @@ class Extractor:
 
     output_dir, src_file, src_dir, src_url = "", "", "", ""
     save_json, save_src = False, False
+    logging_level = logging.DEBUG
 
-    def __init__(self, source_work, output_dir):
-        logging.basicConfig(filename='../logs/html2prettyhtml.log', filemode="a", level=logging.DEBUG)
+    def __init__(self, src_file, output_dir, save_src = False, save_json = False):
+
         logging.info('Created Extractor')
 
         self.output_dir = output_dir if output_dir[-1] == "/" else output_dir + "/"
-        urls = URLExtract().find_urls(source_work)
 
-        if urls:
-            self.src_url = urls[0]
-            self.src_filename = urls[0].split("/")[-1]
-        else:
-            self.src_file = source_work.strip()
-            self.src_dir = os.path.dirname(source_work) + "/"
-            self.src_filename = os.path.basename(source_work)
+        self.src_file = src_file.strip()
+        self.src_dir = os.path.dirname(src_file) + "/"
+        self.src_filename = os.path.basename(src_file)
+        self.save_src = save_src
+        self.save_json = save_json
 
         try:
-            if self.src_url != "":
-                f = urlopen(self.src_url)
-            else:
-                f = open(self.src_file, "rb")
+            f = open(self.src_file, "rb")
             html = f.read()
             f.close()
-        except urllib.error.HTTPError as e:
-            print("Error: could not convert url: " + self.src_url + " HTTPError: " + format(e.code))
-            logging.info("Error: could not convert url: " + self.src_url + " HTTPError: " + format(e.code))
-            exit(1)
-        except URLError as url_error:
-            print("Error: could not open :" + self.src_url + " URL Error: Server Not Found")
-            logging.info("Error: could not open :" + self.src_url + " URL Error: Server Not Found")
-            exit(1)
+
+            self.src_html = html
+            self.soup = BeautifulSoup(html, 'html5lib')
         except OSError as e:
-            print("Error: could not open url: " + self.src_url + ": file/url not found or not readable")
-            logging.info("Error: could not open url: " + self.src_url + ": file/url not found or not readable")
+            print("Error: could not open file: " + self.src_file + ": file not found or not readable")
+            logging.info("Error: could not open url: " + self.src_file + ": file not found or not readable")
             exit(1)
         except Exception as e:
-            print("Error: could not extract html from url/file")
-            logging.info("Error: could not extract html from url/file")
+            print("Error: could not extract html from file " + self.src_file)
+            logging.info("Error: could not extract html from file" + self.src_file)
             return
 
-        self.src_html = html
-        self.soup = BeautifulSoup(html, 'html5lib')
+       
 
     def extract(self):
 
@@ -70,7 +54,16 @@ class Extractor:
         self.extract_sections()
         self.extract_body()
 
-        self.construct_structured_doc()
+        self.structured_doc['src'] = self.src
+        self.structured_doc['metadata'] = self.metadata
+        self.structured_doc['toc'] = self.toc
+        self.structured_doc['sections'] = self.sections
+        self.structured_doc['body'] = self.body
+
+        logging.info(self.structured_doc['src'])
+        logging.info(self.structured_doc['metadata'])
+        logging.info(self.structured_doc['toc'])
+        logging.info(self.sections.keys())
 
         if self.save_json: self.save_json_file()
         if self.save_src: self.save_src_file()
@@ -79,18 +72,6 @@ class Extractor:
 
         logging.info("Extraction Complete")
         return self.structured_doc
-
-    def construct_structured_doc(self):
-        self.structured_doc['src'] = self.src
-        logging.info(self.structured_doc['src'])
-        self.structured_doc['metadata'] = self.metadata
-        logging.info(self.structured_doc['metadata'])
-        self.structured_doc['toc'] = self.toc
-        logging.info(self.structured_doc['toc'])
-        self.structured_doc['sections'] = self.sections
-        logging.info(self.sections.keys())
-        self.structured_doc['body'] = self.body
-        
 
     def save_src_file(self):
         src_filename = self.output_dir + "src/" + self.src_filename

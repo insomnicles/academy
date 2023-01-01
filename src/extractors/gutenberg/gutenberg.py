@@ -7,9 +7,9 @@ import logging
 class GutenbergExtractor(Extractor):
     gutenberg_license = "http://gutenberg.org/license"
 
-    def __init__(self, source_work, output_dir, save_json, save_src):
-        logging.info("Created Gutenberg Dialogue Extractor")
-        super().__init__(source_work, output_dir)
+    def __init__(self, src_file, output_dir, save_json, save_src):
+        logging.info("Created Gutenberg HTML Extractor")
+        super().__init__(src_file, output_dir)
         self.license = self.gutenberg_license
         self.save_json = save_json
         self.save_src = save_src
@@ -89,9 +89,9 @@ class GutenbergExtractor(Extractor):
         excluded_section_tag = [ "section" ]
         for tag in self.soup.body.find_all():
             if (tag.name is not None and tag.name in excluded_section_tag):
+                # print(tag.name)
                 tag.decompose()
                 continue
-
         # books without table of contents have a 0 section
         if 0 in toc_keys and self.toc['toc'][0] == "":
             current_section = 0
@@ -100,12 +100,16 @@ class GutenbergExtractor(Extractor):
             included_section_tag = [ "h1", "h2", "h3", "h4", "p", "pre" ]
 
             for tag in self.soup.body.find_all():
+                if tag.name == "section":
+                    print("STILL SECTION")
                 if tag.name in included_section_tag and tag.text != "":
                     section_html += str(tag)
             sections[0] = section_html
         # books with extracted toc
         else:
             for tag in self.soup.body.find_all():
+                if tag.name == "section":
+                    print("STILL SECTION")
                 if tag.get('id') is not None and tag.get('id') in toc_keys:
                     current_section = tag.get('id')
                     sections[current_section] = ''
@@ -376,3 +380,6 @@ class GutenbergExtractor(Extractor):
                 elem_num += 1
                 sec_elem_num += 1
             self.body[section_id] = elems
+
+    def cleanup(self):
+        pass
