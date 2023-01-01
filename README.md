@@ -24,11 +24,17 @@ The output is either a html file or a latex document. The themes for each are as
 You can convert a book from gutenberg directly (1) or from a local file (2). You can also convert an entire directory (3) -- note that the id argument must be supplied but will be ignored in this case. Finally, you can add "--save" or "--savejson" options (4, 5) to save the source file or the extraction json file to the output directory.
 
 ```
-    1. python beautify_guttenberg.py 2412 output/test easy
-    2. python beautify_guttenberg.py 2412 output/test simple --fromlocaldir=src/gutenberg
-    3. python beautify_guttenberg.py 2412 output/test easy   --fromlocaldir=src/gutenberg --all
-    4. python beautify_guttenberg.py 2412 output/test simple --save
-    5. python beautify_guttenberg.py 2412 output/test easy   --savejson
+    1. python convert_gutenberg.py 2412 output/test easy
+    2. python convert_gutenberg.py 2412 output/test simple --fromlocaldir=src/gutenberg
+    3. python convert_gutenberg.py 2412 output/test easy   --fromlocaldir=src/gutenberg --all
+    4. python convert_gutenberg.py 2412 output/test simple --save
+    5. python convert_gutenberg.py 2412 output/test easy   --savejson
+```
+
+To run tests 
+
+```
+    python -m unittest discover ../test
 ```
 
 Optionally, you can create jekyll pages from the outputed html pages. Update source and output directories in shell script and then run.
