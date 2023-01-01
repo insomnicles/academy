@@ -46,11 +46,11 @@ Optionally, you can create jekyll pages from the outputed html pages. Update sou
 
 ### Easy Theme
 
-![Html Reader](html_reader-easy.png)
+![Html Reader](images/theme-html-easy.png)
 
 ## Latex Document 
 
 ### Simple Theme
 
-![Latex Document](tex_document-simple.png)
+![Latex Document](images/theme-tex-simple.png)
 
