@@ -22,21 +22,21 @@ To use the script you must provide a gutenberg id, a theme and output directory.
 - HTML Reader: easy
 - Latex Document: simple
 
-**Gutenberg Ids:** Gutenberg books are identified by their id, which are in their url and filenames. For example: Hume, Enquiry identified by 9662.
+**Gutenberg Ids:** Gutenberg books are identified by their id, which are in their url and filenames. For example, Plato, *Theaetestus* is identified with id 1726.
 
-* https://www.gutenberg.org/cache/epub/9662/pg9662-images.html
-* https://www.gutenberg.org/ebooks/9662
+* https://www.gutenberg.org/cache/epub/1726/pg1726-images.html
+* https://www.gutenberg.org/ebooks/1726
 
-**Options:** You can convert a book from gutenberg directly (1). Optionally, you can do the same from a local file (2) or an entire local directory (3) -- note that the id argument will be ignored in this case. You can add "--savesrc" or "--savejson" options (4, 5) to save the source file or the extraction json file to the output directory. Finally, you can add "--verbose" or "--debug" (6, 7) options to enable different levels of logging.
+**Options:** You can convert a book from Project Gutenberg directly (1). Optionally, you can do the same from a local file (2) or an entire local directory (3) -- note that the id argument will be ignored in this case. You can add "--savesrc" or "--savejson" options (4, 5) to save the source file or the extraction json file to the output directory. Finally, you can add "--verbose" or "--debug" (6, 7) options to enable different levels of logging.
 ```
-    cd src
-    1. python convert_gutenberg.py 2412 output/test easy
-    2. python convert_gutenberg.py 2412 output/test simple --fromlocaldir=src/gutenberg
-    3. python convert_gutenberg.py 2412 output/test easy   --fromlocaldir=src/gutenberg --all
-    4. python convert_gutenberg.py 2412 output/test simple --savesrc
-    5. python convert_gutenberg.py 2412 output/test easy   --savejson
-    6. python convert_gutenberg.py 2412 output/test easy   --verbose
-    6. python convert_gutenberg.py 2412 output/test simple --savesrc --debug
+cd src
+[1] python convert_gutenberg.py 1726 output/test easy
+[2] python convert_gutenberg.py 1726 output/test simple --fromlocaldir=src/gutenberg
+[3] python convert_gutenberg.py 1726 output/test easy   --fromlocaldir=src/gutenberg --all
+[4] python convert_gutenberg.py 1726 output/test simple --savesrc
+[5] python convert_gutenberg.py 1726 output/test easy   --savejson
+[6] python convert_gutenberg.py 1726 output/test easy   --verbose
+[7] python convert_gutenberg.py 1726 output/test simple --savesrc --debug
 ```
 
 To run tests 
