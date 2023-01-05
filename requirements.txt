@@ -1,2 +1,4 @@
-bs4
-nltk
+beautifulsoup4==4.11.1
+click==8.0.3
+EbookLib==0.18
+nltk==3.8
