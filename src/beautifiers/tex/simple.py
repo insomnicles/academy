@@ -61,6 +61,7 @@ class SimpleBeautifier(Beautifier):
 \\date{{\\today}}
 \\author{{{author}\\\\ Translated by {translator}}}
 \\maketitle
+\\newpage
 """
 
     def create_toc(self) -> str:
@@ -110,7 +111,7 @@ class SimpleBeautifier(Beautifier):
             sentences_tex += " " + sentence
 
         return f"""
-\\par \\textbf{{{speaker}}}
+\\par\\textbf{{{speaker}}}
 \\par {sentences_tex}
 """
 
@@ -165,7 +166,7 @@ class SimpleBeautifier(Beautifier):
         #     sections_tex += f""" {self.toc['table_html']}"""
 
         for section_id in self.body:
-            sec_tex = ""
+            sec_tex = "\\newpage\n"
             for par_id in self.body[section_id]:
                 type = self.body[section_id][par_id]['type']
 

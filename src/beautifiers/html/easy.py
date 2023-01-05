@@ -63,7 +63,7 @@ class EasyBeautifier (Beautifier):
 
     def create_nav_html(self) -> str:
         return f""" <div id="book_reader_nav" onload="navSetup()">
-                        <a href="/">Aquarium</a>
+                        <a href="/"></a>
                         <a href="#" onclick="return showToc()" ><img class="nav_img filter-nav" src="images/icons/toc.svg" /></a>
                         <a href="#" onclick="return firstSection()" ><img class="nav_img filter-nav" src="images/icons/navigate_skip_previous.svg" /></a>
                         <a href="#" onclick="return previousSection()" ><img class="nav_img filter-nav" src="images/icons/navigate_previous.svg" /></a>
