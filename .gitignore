@@ -5,7 +5,7 @@ download.py
 
 archive/*
 logs/*.log
-
+example/modified/*
 # src/download.py
 # src/gutenberg-metadata.json
 src/downloaders/*
