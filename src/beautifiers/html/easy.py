@@ -93,7 +93,7 @@ class EasyBeautifier (Beautifier):
         if author != "": author_html = f"""<h2 class="book_author" lang="en"><a href="#">{author}</a></h2>"""
         if translator != "": translator_html = f"""<h3 class="book_translator" lang="en">Translated by {translator}</h3>"""
         if source != "": source_html = f"""<small><a href="{source}">Source</a></small>"""
-        if license != "": license_html = f"""<a href="{license}"><small>© License</a></small>"""
+        if license != "": license_html = f"""<a href="{license}"><small>© License</small></a>"""
 
         return f""" {title_html}
                     {author_html}
